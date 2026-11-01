@@ -29,7 +29,7 @@ importers:
   packages/cli:
     dependencies:
       "@reposync/core":
-        specifier: workspace:2.0.0
+        specifier: workspace:2.0.1
         version: link:../core
     devDependencies:
       "@types/node":

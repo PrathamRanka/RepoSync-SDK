@@ -2,6 +2,13 @@
 
 All notable changes are documented here.
 
+## [2.0.1] - Unreleased
+
+### Changed
+
+- Prepared the first public RepoSync 2.0.1 npm release with matching Core and
+  CLI package metadata, documentation, and trusted publishing validation.
+
 ## [2.0.0] - Unreleased
 
 ### Added

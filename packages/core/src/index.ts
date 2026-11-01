@@ -21,4 +21,4 @@ export { diagnoseGitHub } from "./diagnostics.js";
 export { loadOverrides } from "./overrides/overrides.js";
 export * from "./types/index.js";
 export * from "./errors.js";
-export const reposyncVersion = "2.0.0";
+export const reposyncVersion = "2.0.1";

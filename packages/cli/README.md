@@ -13,11 +13,11 @@ connectivity.
 Install the CLI and its matching Core release:
 
 ```bash
-npm install --save-dev @reposync/cli@2.0.0 @reposync/core@2.0.0
+npm install --save-dev @reposync/cli@2.0.1 @reposync/core@2.0.1
 ```
 
 ```bash
-pnpm add --save-dev @reposync/cli@2.0.0 @reposync/core@2.0.0
+pnpm add --save-dev @reposync/cli@2.0.1 @reposync/core@2.0.1
 ```
 
 The executable is `reposync`.

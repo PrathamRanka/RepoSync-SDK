@@ -9,6 +9,6 @@
     "start": "node src/index.mjs"
   },
   "dependencies": {
-    "@reposync/core": "^2.0.0"
+    "@reposync/core": "^2.0.1"
   }
 }

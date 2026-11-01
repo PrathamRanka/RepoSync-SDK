@@ -13,11 +13,11 @@ metadata extraction, and Zod for external configuration validation.
 ## Installation
 
 ```bash
-npm install @reposync/core@2.0.0
+npm install @reposync/core@2.0.1
 ```
 
 ```bash
-pnpm add @reposync/core@2.0.0
+pnpm add @reposync/core@2.0.1
 ```
 
 ## Quick start

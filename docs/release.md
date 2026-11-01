@@ -30,8 +30,8 @@ installed by the workflow.
 7. Create and push a new tag only after review:
 
    ```bash
-   git tag v2.0.0
-   git push origin v2.0.0
+   git tag v2.0.1
+   git push origin v2.0.1
    ```
 
 The tag must point at the reviewed commit and match both package versions.
@@ -54,13 +54,20 @@ The workflow:
 
 The old manual token-based release path is intentionally verification-only.
 
-## First 2.0.0 release
+## First 2.0.1 release
 
-The repository currently contains a `v2.0.0` tag that predates the final
-release metadata. Because tags must not be moved or overwritten, do not push
-that tag again. First reconcile the existing tag with the repository owner and
-npm trusted-publisher configuration. Once an approved release tag points to the
-reviewed `2.0.0` commit, pushing that new tag starts the workflow.
+The repository contains an existing `v2.0.0` tag. Preserve it completely; do
+not move, delete, recreate, or push it again. The first public release from the
+current metadata is `v2.0.1`. After reviewing and merging the `2.0.1` changes,
+create and push only the new tag:
+
+```bash
+git tag v2.0.1
+git push origin v2.0.1
+```
+
+The new tag must point to the reviewed `2.0.1` commit and match both package
+versions.
 
 Monitor the workflow and npm package pages. Core must publish successfully
 before the CLI step runs. No package is published by local development

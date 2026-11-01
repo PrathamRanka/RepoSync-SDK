@@ -1,6 +1,6 @@
 {
   "name": "@reposync/core",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "GitHub-powered portfolio discovery SDK",
   "repository": {
     "type": "git",

@@ -26,15 +26,15 @@ Repository snapshot: **0 stars, 0 forks, 0 open issues**, MIT licensed. These fi
 ## Install
 
 ```bash
-npm install @reposync/core@2.0.0
-npm install --save-dev @reposync/cli@2.0.0
+npm install @reposync/core@2.0.1
+npm install --save-dev @reposync/cli@2.0.1
 ```
 
 With pnpm:
 
 ```bash
-pnpm add @reposync/core@2.0.0
-pnpm add --save-dev @reposync/cli@2.0.0
+pnpm add @reposync/core@2.0.1
+pnpm add --save-dev @reposync/cli@2.0.1
 ```
 
 The packages are configured for public npm publishing. Use the package links for release status:

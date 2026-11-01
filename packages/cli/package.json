@@ -1,6 +1,6 @@
 {
   "name": "@reposync/cli",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "CLI for discovering and generating RepoSync project data",
   "repository": {
     "type": "git",
@@ -41,7 +41,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@reposync/core": "workspace:2.0.0"
+    "@reposync/core": "workspace:2.0.1"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
