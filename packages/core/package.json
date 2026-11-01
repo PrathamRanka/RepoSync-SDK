@@ -16,6 +16,16 @@
     "README.md",
     "LICENSE"
   ],
+  "keywords": [
+  "github",
+  "portfolio",
+  "developer-tools",
+  "repository",
+  "typescript",
+  "sdk",
+  "readme-parser",
+  "project-discovery"
+  ],
   "engines": {
     "node": ">=24"
   },
