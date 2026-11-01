@@ -3,9 +3,18 @@ import { RepoSync } from "../src/reposync.js";
 
 function makeRepository(name: string, changes: Record<string, unknown> = {}) {
   return {
-    name, full_name: `octocat/${name}`, html_url: `https://github.com/octocat/${name}`,
-    description: `${name} metadata`, homepage: null, topics: ["portfolio"], stargazers_count: 10,
-    forks_count: 0, archived: false, fork: false, updated_at: "2026-01-01", ...changes,
+    name,
+    full_name: `octocat/${name}`,
+    html_url: `https://github.com/octocat/${name}`,
+    description: `${name} metadata`,
+    homepage: null,
+    topics: ["portfolio"],
+    stargazers_count: 10,
+    forks_count: 0,
+    archived: false,
+    fork: false,
+    updated_at: "2026-01-01",
+    ...changes,
   };
 }
 
@@ -21,7 +30,9 @@ function mockClient(names: string[]) {
         getReadme: async ({ repo }: { repo: string }) => ({
           data: {
             encoding: "base64",
-            content: Buffer.from(`# ${repo}\n\nREADME introduction\n\n## Technologies\n- TypeScript`).toString("base64"),
+            content: Buffer.from(
+              `# ${repo}\n\nREADME introduction\n\n## Technologies\n- TypeScript`,
+            ).toString("base64"),
           },
         }),
       },
@@ -32,10 +43,14 @@ function mockClient(names: string[]) {
 describe("RepoSync end-to-end", () => {
   it("discovers and normalizes a complete portfolio without live GitHub access", async () => {
     const projects = await new RepoSync({
-      username: "octocat", topics: ["portfolio"], client: mockClient(["alpha"]),
+      username: "octocat",
+      topics: ["portfolio"],
+      client: mockClient(["alpha"]),
     }).discover();
     expect(projects[0]).toMatchObject({
-      name: "alpha", description: "README introduction", technologies: ["TypeScript"],
+      name: "alpha",
+      description: "README introduction",
+      technologies: ["TypeScript"],
     });
   });
 
@@ -43,7 +58,12 @@ describe("RepoSync end-to-end", () => {
     const client = mockClient(["alpha", "beta"]);
     client.rest.repos.getReadme = async ({ repo }: { repo: string }) => {
       if (repo === "beta") throw Object.assign(new Error("not found"), { status: 404 });
-      return { data: { encoding: "base64", content: Buffer.from("# alpha\n\n## Stack\n- README").toString("base64") } };
+      return {
+        data: {
+          encoding: "base64",
+          content: Buffer.from("# alpha\n\n## Stack\n- README").toString("base64"),
+        },
+      };
     };
     const projects = await new RepoSync({
       username: "octocat",
@@ -57,10 +77,13 @@ describe("RepoSync end-to-end", () => {
       client,
     }).discover();
     expect(projects.find((project) => project.name === "alpha")).toMatchObject({
-      description: "full", technologies: [],
+      description: "full",
+      technologies: [],
     });
     expect(projects.find((project) => project.name === "beta")).toMatchObject({
-      description: "custom", technologies: ["Default"], featured: true,
+      description: "custom",
+      technologies: ["Default"],
+      featured: true,
     });
   });
 

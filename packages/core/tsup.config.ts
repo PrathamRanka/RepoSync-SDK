@@ -7,5 +7,5 @@ export default defineConfig({
   clean: true,
   splitting: false,
   sourcemap: true,
-  target: "node24"
+  target: "node24",
 });

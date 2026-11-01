@@ -12,16 +12,37 @@ describe("configuration and normalization", () => {
       defaults: { description: "global", technologies: ["Default Tech"], featured: true },
     });
     expect(config.filters).toMatchObject({
-      topics: ["portfolio"], topicMatch: "all", minStars: 5, includeForks: false, includeArchived: false,
+      topics: ["portfolio"],
+      topicMatch: "all",
+      minStars: 5,
+      includeForks: false,
+      includeArchived: false,
     });
-    const project = normalizeProject({
-      name: "demo", full_name: "octocat/demo", html_url: "https://github.com/octocat/demo",
-      description: "GitHub", homepage: null, topics: ["portfolio"], stargazers_count: 7,
-      forks_count: 1, archived: false, fork: false, updated_at: "2026-01-01",
-    }, { JavaScript: 100 }, {
-      technologies: ["README Tech"], features: ["README Feature"], demoUrl: "https://readme.example",
-      imageUrls: [], introduction: "README description",
-    }, config.defaults, { description: "Project description", technologies: ["Project Tech"] });
+    const project = normalizeProject(
+      {
+        name: "demo",
+        full_name: "octocat/demo",
+        html_url: "https://github.com/octocat/demo",
+        description: "GitHub",
+        homepage: null,
+        topics: ["portfolio"],
+        stargazers_count: 7,
+        forks_count: 1,
+        archived: false,
+        fork: false,
+        updated_at: "2026-01-01",
+      },
+      { JavaScript: 100 },
+      {
+        technologies: ["README Tech"],
+        features: ["README Feature"],
+        demoUrl: "https://readme.example",
+        imageUrls: [],
+        introduction: "README description",
+      },
+      config.defaults,
+      { description: "Project description", technologies: ["Project Tech"] },
+    );
     expect(project.description).toBe("Project description");
     expect(project.technologies).toEqual(["Project Tech"]);
     expect(project.features).toEqual(["README Feature"]);
@@ -30,11 +51,15 @@ describe("configuration and normalization", () => {
   });
 
   it("rejects unknown configuration keys", () => {
-    expect(() => resolveConfig({ username: "octocat", unexpected: true })).toThrow("Invalid RepoSync configuration");
+    expect(() => resolveConfig({ username: "octocat", unexpected: true })).toThrow(
+      "Invalid RepoSync configuration",
+    );
   });
 
   it("rejects malformed JSON-shaped overrides and unexpected fields", async () => {
-    await expect(loadOverrides({ demo: { unexpected: true } })).rejects.toThrow("Invalid project overrides");
+    await expect(loadOverrides({ demo: { unexpected: true } })).rejects.toThrow(
+      "Invalid project overrides",
+    );
     await expect(loadOverrides(null)).resolves.toEqual({});
   });
 });

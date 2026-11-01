@@ -1,12 +1,10 @@
 // Small reusable helpers for slug generation, URL handling and pagination-related utilities.
 
-
-
 export class RepoSyncError extends Error {
   constructor(
     message: string,
     public readonly code: string,
-    options?: ErrorOptions
+    options?: ErrorOptions,
   ) {
     super(message, options);
     this.name = "RepoSyncError";
@@ -18,7 +16,7 @@ export class GitHubAPIError extends RepoSyncError {
     message: string,
     public readonly status: number,
     public readonly documentationUrl?: string,
-    options?: ErrorOptions
+    options?: ErrorOptions,
   ) {
     super(message, "GITHUB_API_ERROR", options);
     this.name = "GitHubAPIError";
@@ -36,7 +34,7 @@ export class GitHubRateLimitError extends RepoSyncError {
   constructor(
     message: string,
     public readonly retryAfter: number | null = null,
-    public readonly resetAt: number | null = null
+    public readonly resetAt: number | null = null,
   ) {
     super(message, "GITHUB_RATE_LIMIT_EXCEEDED");
     this.name = "GitHubRateLimitError";
@@ -47,7 +45,7 @@ export class RepositoryNotFoundError extends RepoSyncError {
   constructor(owner: string, repository: string) {
     super(
       `Repository "${owner}/${repository}" was not found or is inaccessible.`,
-      "REPOSITORY_NOT_FOUND"
+      "REPOSITORY_NOT_FOUND",
     );
 
     this.name = "RepositoryNotFoundError";
@@ -60,4 +58,3 @@ export class ConfigurationError extends RepoSyncError {
     this.name = "ConfigurationError";
   }
 }
-

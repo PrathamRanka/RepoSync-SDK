@@ -20,12 +20,16 @@ export class RepoSync {
   async discover(): Promise<Project[]> {
     const overrides = await loadOverrides(this.overridesInput);
     const repositories = await discoverRepositories(this.config, this.client);
-    return repositories.map(({ repository, languages, readme }) => normalizeProject(
-      repository,
-      languages,
-      parseReadme(readme, this.config.aliases),
-      this.config.defaults,
-      overrides[repository.full_name] ?? overrides[repository.name],
-    )).sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER));
+    return repositories
+      .map(({ repository, languages, readme }) =>
+        normalizeProject(
+          repository,
+          languages,
+          parseReadme(readme, this.config.aliases),
+          this.config.defaults,
+          overrides[repository.full_name] ?? overrides[repository.name],
+        ),
+      )
+      .sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER));
   }
 }

@@ -1,0 +1,70 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish packages and create a GitHub release
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+  publish:
+    needs: verify
+    if: inputs.publish == true
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: |
+          CORE_VERSION=$(node -p "require('./packages/core/package.json').version")
+          CLI_VERSION=$(node -p "require('./packages/cli/package.json').version")
+          test "$CORE_VERSION" = "$CLI_VERSION"
+          grep -q "\[$CORE_VERSION\]" CHANGELOG.md
+          test "$CORE_VERSION" = "1.0.0"
+      - run: pnpm build
+      - run: pnpm publish --filter @reposync/core --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: pnpm publish --filter @reposync/cli --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: gh release create "v1.0.0" --generate-notes --title "RepoSync v1.0.0"
+        env:
+          GH_TOKEN: ${{ github.token }}

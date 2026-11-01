@@ -15,7 +15,10 @@ describe("configuration", () => {
     expect(config.username).toBe("octocat");
     expect(config.excludeForks).toBe(false);
     expect(config.filters).toMatchObject({
-      includeForks: false, includeArchived: false, minStars: 0, topics: [],
+      includeForks: false,
+      includeArchived: false,
+      minStars: 0,
+      topics: [],
     });
     expect(config.aliases.technologies).toContain("technology");
   });
@@ -27,14 +30,20 @@ describe("configuration", () => {
     });
     expect(config.username).toBe("octocat");
     expect(config.filters).toMatchObject({
-      topics: ["portfolio"], includeForks: true, includeArchived: true,
+      topics: ["portfolio"],
+      includeForks: true,
+      includeArchived: true,
     });
   });
 
   it("rejects invalid values and unexpected properties", () => {
     expect(() => resolveConfig({ username: "", limit: 0 })).toThrow(ConfigurationError);
-    expect(() => resolveConfig({ username: "octocat", filters: { minStars: -1 } })).toThrow(ConfigurationError);
-    expect(() => resolveConfig({ username: "octocat", defaults: { demoUrl: "javascript:alert(1)" } })).toThrow(ConfigurationError);
+    expect(() => resolveConfig({ username: "octocat", filters: { minStars: -1 } })).toThrow(
+      ConfigurationError,
+    );
+    expect(() =>
+      resolveConfig({ username: "octocat", defaults: { demoUrl: "javascript:alert(1)" } }),
+    ).toThrow(ConfigurationError);
     expect(() => resolveConfig({ username: "octocat", unknown: true })).toThrow(ConfigurationError);
   });
 

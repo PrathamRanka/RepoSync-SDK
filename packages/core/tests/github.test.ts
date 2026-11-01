@@ -1,12 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { GitHubAPIError, GitHubAuthenticationError, GitHubRateLimitError, RepositoryNotFoundError } from "../src/errors.js";
+import {
+  GitHubAPIError,
+  GitHubAuthenticationError,
+  GitHubRateLimitError,
+  RepositoryNotFoundError,
+} from "../src/errors.js";
 import { resolveConfig } from "../src/config/config.js";
 import { discoverRepositories, repositoryMatches } from "../src/github/repositories.js";
 
 const repo = (changes: Record<string, unknown> = {}) => ({
-  name: "demo", full_name: "octocat/demo", html_url: "https://github.com/octocat/demo",
-  description: null, homepage: null, topics: ["portfolio", "typescript"], stargazers_count: 10,
-  forks_count: 0, archived: false, fork: false, updated_at: "2026-01-01", ...changes,
+  name: "demo",
+  full_name: "octocat/demo",
+  html_url: "https://github.com/octocat/demo",
+  description: null,
+  homepage: null,
+  topics: ["portfolio", "typescript"],
+  stargazers_count: 10,
+  forks_count: 0,
+  archived: false,
+  fork: false,
+  updated_at: "2026-01-01",
+  ...changes,
 });
 
 describe("repository filtering", () => {
@@ -52,12 +66,27 @@ describe("repository filtering", () => {
 
   it("sorts, limits, and makes no detail requests for excluded repositories", async () => {
     const repositories = [
-      repo({ name: "low", full_name: "octocat/low", stargazers_count: 2, updated_at: "2026-03-01" }),
-      repo({ name: "high", full_name: "octocat/high", stargazers_count: 20, updated_at: "2026-01-01" }),
+      repo({
+        name: "low",
+        full_name: "octocat/low",
+        stargazers_count: 2,
+        updated_at: "2026-03-01",
+      }),
+      repo({
+        name: "high",
+        full_name: "octocat/high",
+        stargazers_count: 20,
+        updated_at: "2026-01-01",
+      }),
       repo({ name: "fork", full_name: "octocat/fork", fork: true, stargazers_count: 99 }),
     ];
     const getCalls: string[] = [];
-    const config = resolveConfig({ username: "octocat", limit: 1, sortBy: "stars", filters: { minStars: 1 } });
+    const config = resolveConfig({
+      username: "octocat",
+      limit: 1,
+      sortBy: "stars",
+      filters: { minStars: 1 },
+    });
     const client = {
       paginate: async () => repositories,
       rest: {
@@ -81,13 +110,24 @@ describe("repository filtering", () => {
     const emptyConfig = resolveConfig({ username: "octocat" });
     const emptyClient = {
       paginate: async () => [],
-      rest: { repos: { listForUser: {}, get: async () => { throw new Error("unexpected"); }, listLanguages: async () => ({ data: {} }), getReadme: async () => ({ data: {} }) } },
+      rest: {
+        repos: {
+          listForUser: {},
+          get: async () => {
+            throw new Error("unexpected");
+          },
+          listLanguages: async () => ({ data: {} }),
+          getReadme: async () => ({ data: {} }),
+        },
+      },
     };
     await expect(discoverRepositories(emptyConfig, emptyClient)).resolves.toEqual([]);
 
     let active = 0;
     let maximum = 0;
-    const repositories = ["a", "b", "c", "d", "e"].map((name) => repo({ name, full_name: `octocat/${name}` }));
+    const repositories = ["a", "b", "c", "d", "e"].map((name) =>
+      repo({ name, full_name: `octocat/${name}` }),
+    );
     const config = resolveConfig({ username: "octocat", concurrency: 2 });
     const client = {
       paginate: async () => repositories,
@@ -112,18 +152,26 @@ describe("repository filtering", () => {
 
   it("supports any-topic matching and deterministic name sorting", async () => {
     const config = resolveConfig({
-      username: "octocat", sortBy: "name", filters: { topics: ["missing", "PORTFOLIO"], topicMatch: "any" },
+      username: "octocat",
+      sortBy: "name",
+      filters: { topics: ["missing", "PORTFOLIO"], topicMatch: "any" },
     });
     expect(repositoryMatches(repo({ topics: ["portfolio"] }), config)).toBe(true);
-    const repositories = ["zeta", "alpha", "middle"].map((name) => repo({ name, full_name: `octocat/${name}` }));
+    const repositories = ["zeta", "alpha", "middle"].map((name) =>
+      repo({ name, full_name: `octocat/${name}` }),
+    );
     const client = {
       paginate: async () => repositories,
-      rest: { repos: {
-        listForUser: {},
-        get: async ({ repo: name }: { repo: string }) => ({ data: repo({ name, full_name: `octocat/${name}` }) }),
-        listLanguages: async () => ({ data: {} }),
-        getReadme: async () => ({ data: {} }),
-      } },
+      rest: {
+        repos: {
+          listForUser: {},
+          get: async ({ repo: name }: { repo: string }) => ({
+            data: repo({ name, full_name: `octocat/${name}` }),
+          }),
+          listLanguages: async () => ({ data: {} }),
+          getReadme: async () => ({ data: {} }),
+        },
+      },
     };
     const result = await discoverRepositories(config, client);
     expect(result.map(({ repository }) => repository.name)).toEqual(["alpha", "middle", "zeta"]);
@@ -136,8 +184,17 @@ describe("repository filtering", () => {
   ])("maps GitHub status %s without returning partial results", async (status, ErrorType) => {
     const config = resolveConfig({ username: "octocat", token: "secret-token" });
     const client = {
-      paginate: async () => { throw { status, response: { data: { message: `token secret-token status ${status}` } } }; },
-      rest: { repos: { listForUser: {}, get: async () => ({ data: repo() }), listLanguages: async () => ({ data: {} }), getReadme: async () => ({ data: {} }) } },
+      paginate: async () => {
+        throw { status, response: { data: { message: `token secret-token status ${status}` } } };
+      },
+      rest: {
+        repos: {
+          listForUser: {},
+          get: async () => ({ data: repo() }),
+          listLanguages: async () => ({ data: {} }),
+          getReadme: async () => ({ data: {} }),
+        },
+      },
     };
     await expect(discoverRepositories(config, client)).rejects.toBeInstanceOf(ErrorType);
     await expect(discoverRepositories(config, client)).rejects.not.toThrow("secret-token");
@@ -147,19 +204,39 @@ describe("repository filtering", () => {
     const cause = new Error("socket failure");
     const networkConfig = resolveConfig({ username: "octocat" });
     const networkClient = {
-      paginate: async () => { throw cause; },
-      rest: { repos: { listForUser: {}, get: async () => ({ data: repo() }), listLanguages: async () => ({ data: {} }), getReadme: async () => ({ data: {} }) } },
+      paginate: async () => {
+        throw cause;
+      },
+      rest: {
+        repos: {
+          listForUser: {},
+          get: async () => ({ data: repo() }),
+          listLanguages: async () => ({ data: {} }),
+          getReadme: async () => ({ data: {} }),
+        },
+      },
     };
     await expect(discoverRepositories(networkConfig, networkClient)).rejects.toMatchObject({
-      code: "GITHUB_API_ERROR", cause,
+      code: "GITHUB_API_ERROR",
+      cause,
     });
 
     const rateClient = {
-      paginate: async () => { throw { status: 403, response: { headers: { "retry-after": "5", "x-ratelimit-reset": "123" }, data: { message: "limited" } } }; },
+      paginate: async () => {
+        throw {
+          status: 403,
+          response: {
+            headers: { "retry-after": "5", "x-ratelimit-reset": "123" },
+            data: { message: "limited" },
+          },
+        };
+      },
       rest: networkClient.rest,
     };
     await expect(discoverRepositories(networkConfig, rateClient)).rejects.toMatchObject({
-      code: "GITHUB_RATE_LIMIT_EXCEEDED", retryAfter: 5, resetAt: 123,
+      code: "GITHUB_RATE_LIMIT_EXCEEDED",
+      retryAfter: 5,
+      resetAt: 123,
     } satisfies Partial<GitHubRateLimitError>);
   });
 
@@ -167,17 +244,33 @@ describe("repository filtering", () => {
     const config = resolveConfig({ username: "octocat" });
     const base = {
       paginate: async () => [repo()],
-      rest: { repos: {
-        listForUser: {},
-        get: async () => ({ data: repo() }),
-        listLanguages: async () => ({ data: {} }),
-        getReadme: async () => { throw { status: 404 }; },
-      } },
+      rest: {
+        repos: {
+          listForUser: {},
+          get: async () => ({ data: repo() }),
+          listLanguages: async () => ({ data: {} }),
+          getReadme: async () => {
+            throw { status: 404 };
+          },
+        },
+      },
     };
     await expect(discoverRepositories(config, base)).resolves.toMatchObject([{ readme: null }]);
     const malformed = { ...base, paginate: async () => [{ name: "broken" }] };
     await expect(discoverRepositories(config, malformed)).rejects.toMatchObject({ status: 0 });
-    const repositoryFailure = { ...base, rest: { repos: { ...base.rest.repos, get: async () => { throw { status: 404 }; } } } };
-    await expect(discoverRepositories(config, repositoryFailure)).rejects.toBeInstanceOf(RepositoryNotFoundError);
+    const repositoryFailure = {
+      ...base,
+      rest: {
+        repos: {
+          ...base.rest.repos,
+          get: async () => {
+            throw { status: 404 };
+          },
+        },
+      },
+    };
+    await expect(discoverRepositories(config, repositoryFailure)).rejects.toBeInstanceOf(
+      RepositoryNotFoundError,
+    );
   });
 });

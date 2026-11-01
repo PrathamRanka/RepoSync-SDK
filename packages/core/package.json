@@ -1,6 +1,6 @@
 {
   "name": "@reposync/core",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "GitHub-powered portfolio discovery SDK",
   "type": "module",
   "main": "./dist/index.js",
@@ -17,14 +17,14 @@
     "LICENSE"
   ],
   "keywords": [
-  "github",
-  "portfolio",
-  "developer-tools",
-  "repository",
-  "typescript",
-  "sdk",
-  "readme-parser",
-  "project-discovery"
+    "github",
+    "portfolio",
+    "developer-tools",
+    "repository",
+    "typescript",
+    "sdk",
+    "readme-parser",
+    "project-discovery"
   ],
   "engines": {
     "node": ">=24"
@@ -49,6 +49,6 @@
     "@types/node": "^24.19.2",
     "tsup": "^8.5.0",
     "typescript": "^5.9.0",
-    "vitest": "^3.2.0"
+    "vitest": "^5.0.5"
   }
 }

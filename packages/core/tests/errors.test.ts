@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
-  ConfigurationError, GitHubAPIError, GitHubAuthenticationError, GitHubRateLimitError, RepoSyncError,
+  ConfigurationError,
+  GitHubAPIError,
+  GitHubAuthenticationError,
+  GitHubRateLimitError,
+  RepoSyncError,
 } from "../src/errors.js";
 
 describe("error hierarchy", () => {

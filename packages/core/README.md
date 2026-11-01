@@ -69,18 +69,26 @@ const reposync = new RepoSync({
 const projects = await reposync.discover();
 ```
 
+The CLI can discover the same configuration from `reposync.config.ts` or
+`reposync.config.json`. Core applications can use `loadConfig()` when they need
+that file-based discovery directly.
+
 ### Configuration options
 
-| Option | Description |
-|---|---|
-| `username` | GitHub username to discover repositories from |
-| `topics` | Repository topics used for filtering |
-| `token` | Optional GitHub personal access token |
-| `excludeForks` | Exclude forked repositories |
-| `excludeArchived` | Exclude archived repositories |
-| `limit` | Maximum number of repositories to process |
-| `sortBy` | Sort repositories by `updated`, `stars`, or `name` |
-| `defaults` | Global defaults for project metadata |
+| Option            | Description                                                       |
+| ----------------- | ----------------------------------------------------------------- |
+| `username`        | GitHub username to discover repositories from                     |
+| `topics`          | Repository topics used for filtering                              |
+| `token`           | Optional GitHub personal access token                             |
+| `excludeForks`    | Exclude forked repositories                                       |
+| `excludeArchived` | Exclude archived repositories                                     |
+| `limit`           | Maximum number of repositories to process                         |
+| `sortBy`          | Sort repositories by `updated`, `stars`, or `name`                |
+| `defaults`        | Global defaults for project metadata                              |
+| `aliases`         | README heading aliases for technologies, features, and demos      |
+| `filters`         | Any/all topic matching, fork/archive inclusion, and minimum stars |
+| `concurrency`     | Maximum concurrent repository detail loads                        |
+| `output`          | JSON output path and format used by the CLI                       |
 
 For authenticated requests, provide a GitHub token through the `token` option or the `GITHUB_TOKEN` environment variable.
 
@@ -127,28 +135,28 @@ Overrides allow you to control how projects appear without changing their GitHub
 
 The output includes:
 
-| Property | Description |
-|---|---|
-| `name` | Repository name |
-| `title` | Display title |
-| `fullName` | Repository owner and name |
-| `description` | Resolved project description |
-| `githubDescription` | Original GitHub description |
-| `url` | GitHub repository URL |
-| `homepage` | GitHub homepage URL |
-| `demoUrl` | Resolved demo URL |
-| `imageUrls` | Project image URLs |
-| `tags` | Resolved project tags |
-| `topics` | GitHub repository topics |
-| `technologies` | Extracted technologies |
-| `features` | Extracted project features |
-| `introduction` | Extracted README introduction |
-| `languages` | GitHub language statistics |
-| `stars` | Repository stars |
-| `forks` | Repository forks |
-| `featured` | Whether the project is featured |
-| `order` | Optional display order |
-| `updatedAt` | Last repository update timestamp |
+| Property            | Description                      |
+| ------------------- | -------------------------------- |
+| `name`              | Repository name                  |
+| `title`             | Display title                    |
+| `fullName`          | Repository owner and name        |
+| `description`       | Resolved project description     |
+| `githubDescription` | Original GitHub description      |
+| `url`               | GitHub repository URL            |
+| `homepage`          | GitHub homepage URL              |
+| `demoUrl`           | Resolved demo URL                |
+| `imageUrls`         | Project image URLs               |
+| `tags`              | Resolved project tags            |
+| `topics`            | GitHub repository topics         |
+| `technologies`      | Extracted technologies           |
+| `features`          | Extracted project features       |
+| `introduction`      | Extracted README introduction    |
+| `languages`         | GitHub language statistics       |
+| `stars`             | Repository stars                 |
+| `forks`             | Repository forks                 |
+| `featured`          | Whether the project is featured  |
+| `order`             | Optional display order           |
+| `updatedAt`         | Last repository update timestamp |
 
 Import the `Project` type when you need to type your application data.
 
