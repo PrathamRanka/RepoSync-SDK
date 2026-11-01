@@ -21,14 +21,16 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "mdast-util-to-string": "^4.0.0",
+    "octokit": "^5.0.5",
     "remark": "^15.0.0",
     "remark-gfm": "^4.0.0",
     "zod": "^4.0.0"
   },
   "devDependencies": {
+    "@types/node": "^24.0.0",
     "tsup": "^8.5.0",
     "typescript": "^5.9.0",
-    "vitest": "^3.2.0",
-    "@types/node": "^24.0.0"
+    "vitest": "^3.2.0"
   }
 }
