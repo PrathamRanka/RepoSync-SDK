@@ -202,5 +202,3 @@ Read the full guides:
 ## License
 
 RepoSync is released under the [MIT License](./LICENSE).
-
-
