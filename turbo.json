@@ -9,6 +9,9 @@
       "dependsOn": ["build"]
     },
     "lint": {},
-    "typecheck": {}
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    }
   }
 }
