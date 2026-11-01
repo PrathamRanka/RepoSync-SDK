@@ -11,7 +11,9 @@ export function normalizeProject(repo: Repository, languages: Record<string, num
     overrideValue ?? defaultValue ?? readmeValue ?? metadataValue;
   const title = override?.title ?? defaults.title ?? repo.name;
   const description = override?.description ?? defaults.description ?? readme.introduction ?? repo.description ?? "";
-  const technologies = chosen(override?.technologies ?? override?.tags, defaults.technologies ?? defaults.tags, readme.technologies, Object.keys(languages));
+  const technologies = override?.technologies ?? override?.tags ??
+    defaults.technologies ?? defaults.tags ??
+    (readme.technologies.length ? readme.technologies : Object.keys(languages));
   const features = chosen(override?.features, defaults.features, readme.features, []);
   const images = override?.images ?? (override?.image ? [override.image] : undefined) ?? defaults.images ?? (defaults.image ? [defaults.image] : undefined) ?? readme.imageUrls;
   return {

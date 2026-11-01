@@ -8,22 +8,24 @@ import type { Project, RepoSyncOptions } from "./types/index.js";
 export class RepoSync {
   private readonly config;
   private readonly overridesInput: unknown;
+  private readonly client;
 
   constructor(options: RepoSyncOptions) {
-    const { overrides, ...config } = options;
+    const { overrides, client, ...config } = options;
     this.config = resolveConfig(config);
     this.overridesInput = overrides;
+    this.client = client;
   }
 
   async discover(): Promise<Project[]> {
     const overrides = await loadOverrides(this.overridesInput);
-    const repositories = await discoverRepositories(this.config);
+    const repositories = await discoverRepositories(this.config, this.client);
     return repositories.map(({ repository, languages, readme }) => normalizeProject(
       repository,
       languages,
       parseReadme(readme, this.config.aliases),
       this.config.defaults,
-      overrides[repository.name] ?? overrides[repository.full_name],
+      overrides[repository.full_name] ?? overrides[repository.name],
     )).sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER));
   }
 }

@@ -8,9 +8,9 @@ const projectDefaultsSchema = z
     tags: z.array(z.string()).optional(),
     technologies: z.array(z.string()).optional(),
     features: z.array(z.string()).optional(),
-    image: z.string().min(1).optional(),
-    images: z.array(z.string().min(1)).optional(),
-    demoUrl: z.string().min(1).optional(),
+    image: z.string().min(1).refine(isSafeAssetUrl, "must be an HTTP(S) or relative URL").optional(),
+    images: z.array(z.string().min(1).refine(isSafeAssetUrl, "must be an HTTP(S) or relative URL")).optional(),
+    demoUrl: z.string().min(1).refine(isSafeHttpUrl, "must be an HTTP(S) URL").optional(),
     featured: z.boolean().optional(),
     order: z.number().int().optional(),
   })
@@ -45,6 +45,7 @@ const configSchema = z
       features: ["features", "key features"],
       demos: ["demo", "live demo", "live", "website"],
     }),
+    concurrency: z.number().int().positive().max(20).default(4),
     filters: filtersSchema.default({
       topicMatch: "any",
       includeForks: false,
@@ -60,12 +61,31 @@ export type ResolvedRepoSyncConfig = z.output<typeof configSchema> & {
   filters: z.output<typeof filtersSchema>;
 };
 
+function isSafeHttpUrl(value: string): boolean {
+  try {
+    return ["http:", "https:"].includes(new URL(value).protocol);
+  } catch {
+    return false;
+  }
+}
+
+function isSafeAssetUrl(value: string): boolean {
+  if (value.startsWith("/") || value.startsWith("./") || value.startsWith("../")) return true;
+  return isSafeHttpUrl(value);
+}
+
 export function resolveConfig(input: unknown): ResolvedRepoSyncConfig {
   const candidate = input && typeof input === "object" ? input as Record<string, unknown> : input;
   const normalized = candidate && typeof candidate === "object" && "github" in candidate
     ? {
         ...(candidate.github as Record<string, unknown>),
-        ...(((candidate as Record<string, unknown>).discovery as Record<string, unknown> | undefined) ?? {}),
+        topics: ((candidate as Record<string, unknown>).discovery as Record<string, unknown> | undefined)?.topic
+          ? [((candidate as Record<string, unknown>).discovery as Record<string, unknown>).topic]
+          : undefined,
+        filters: {
+          includeForks: ((candidate as Record<string, unknown>).discovery as Record<string, unknown> | undefined)?.includeForks,
+          includeArchived: ((candidate as Record<string, unknown>).discovery as Record<string, unknown> | undefined)?.includeArchived,
+        },
         aliases: (candidate as Record<string, unknown>).aliases,
       }
     : candidate;
@@ -76,13 +96,16 @@ export function resolveConfig(input: unknown): ResolvedRepoSyncConfig {
           ((normalized as Record<string, unknown>).topic ? [(normalized as Record<string, unknown>).topic] : undefined),
         excludeForks: (normalized as Record<string, unknown>).excludeForks,
         excludeArchived: (normalized as Record<string, unknown>).excludeArchived,
-        filters: {
-          ...((normalized as Record<string, unknown>).filters as Record<string, unknown> | undefined),
-          ...(typeof (normalized as Record<string, unknown>).excludeForks === "boolean"
-            ? { includeForks: !(normalized as Record<string, unknown>).excludeForks } : {}),
-          ...(typeof (normalized as Record<string, unknown>).excludeArchived === "boolean"
-            ? { includeArchived: !(normalized as Record<string, unknown>).excludeArchived } : {}),
-        },
+        filters: (() => {
+          const filters = ((normalized as Record<string, unknown>).filters as Record<string, unknown> | undefined) ?? {};
+          return {
+            ...filters,
+            ...(filters.includeForks === undefined && typeof (normalized as Record<string, unknown>).excludeForks === "boolean"
+              ? { includeForks: !(normalized as Record<string, unknown>).excludeForks } : {}),
+            ...(filters.includeArchived === undefined && typeof (normalized as Record<string, unknown>).excludeArchived === "boolean"
+              ? { includeArchived: !(normalized as Record<string, unknown>).excludeArchived } : {}),
+          };
+        })(),
       }
     : normalized;
   const result = configSchema.safeParse(source);

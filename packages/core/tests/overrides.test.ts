@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { resolveConfig } from "../src/config/config.js";
 import { normalizeProject } from "../src/normalizer.js";
+import { loadOverrides } from "../src/overrides/overrides.js";
 
 describe("configuration and normalization", () => {
   it("validates filters and applies project > defaults > README > metadata precedence", () => {
@@ -30,5 +31,10 @@ describe("configuration and normalization", () => {
 
   it("rejects unknown configuration keys", () => {
     expect(() => resolveConfig({ username: "octocat", unexpected: true })).toThrow("Invalid RepoSync configuration");
+  });
+
+  it("rejects malformed JSON-shaped overrides and unexpected fields", async () => {
+    await expect(loadOverrides({ demo: { unexpected: true } })).rejects.toThrow("Invalid project overrides");
+    await expect(loadOverrides(null)).resolves.toEqual({});
   });
 });

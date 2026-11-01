@@ -1,6 +1,7 @@
 //All shared TypeScript interfaces and types.
 
 import type { RepoSyncConfigInput } from "../config/config.js";
+import type { GitHubClient } from "../github/repositories.js";
 
 export type ProjectOverride = {
   title?: string;
@@ -40,6 +41,7 @@ export type Project = {
 
 export type RepoSyncOptions = RepoSyncConfigInput & {
   overrides?: unknown;
+  client?: GitHubClient;
 };
 
 export type ReadmeData = {
