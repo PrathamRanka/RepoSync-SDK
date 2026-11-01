@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability reporting
+    url: https://github.com/PrathamRanka/RepoSync-SDK/security/advisories/new
+    about: Do not report vulnerabilities in public issues.
+  - name: Documentation and support
+    url: https://github.com/PrathamRanka/RepoSync-SDK#readme
+    about: Check the documentation and SUPPORT.md before opening an issue.

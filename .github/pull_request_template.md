@@ -1,6 +1,17 @@
 ## Summary
 
-Describe the change and why it is needed.
+### Problem
+
+Describe the user or maintainer problem being solved.
+
+### Implementation
+
+Summarize the approach and affected packages.
+
+### Compatibility impact
+
+Describe API, CLI, output, configuration, or platform compatibility impact.
+State explicitly when there is no breaking change.
 
 ## Verification
 
@@ -10,9 +21,14 @@ Describe the change and why it is needed.
 - [ ] `pnpm test`
 - [ ] `pnpm build`
 
+## Documentation and security
+
+- [ ] Documentation and examples are updated.
+- [ ] Security and secret-handling implications were considered.
+- [ ] Breaking changes or migration notes are documented.
+
 ## Checklist
 
-- [ ] Tests cover the behavior and failure paths.
-- [ ] Documentation is updated.
+- [ ] Tests cover success and failure paths.
 - [ ] No secrets or generated artifacts are included.
 - [ ] Backward compatibility was considered.

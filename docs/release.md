@@ -27,7 +27,7 @@ installed by the workflow.
 4. Update `CHANGELOG.md` and the package READMEs.
 5. Run the complete verification commands from [the testing guide](testing.md).
 6. Merge the changes to `main`.
-7. Create and push a new tag only after review:
+7. Create and push a new tag only after review. For this release:
 
    ```bash
    git tag v2.0.1
@@ -52,7 +52,29 @@ The workflow:
 - relies on npm's immutable versions, so a duplicate publication fails rather
   than overwriting an existing version.
 
-The old manual token-based release path is intentionally verification-only.
+There is no local publish command in the repository. The old manual token-based
+release path is intentionally verification-only.
+
+## Monitoring and recovery
+
+Monitor the tag workflow and both npm package pages. npm Core must publish
+successfully before the CLI step runs. If Core publishes but CLI fails, do not
+rerun the same tag workflow blindly: inspect the failed step, correct the
+problem in a new commit, and use a new patch version and tag. npm versions are
+immutable, so a failed CLI publication cannot be repaired by overwriting the
+same version.
+
+If a workflow fails before either package publishes, fix the cause and rerun
+the workflow for the same tag only after confirming that npm has no version
+for that tag. If one package has already published, treat the release as
+partially complete, publish the missing package only through a reviewed
+follow-up release process, and do not delete or move tags. Rollback means
+releasing a corrected newer version; published npm artifacts cannot be
+withdrawn by rewriting Git history.
+
+After publication, verify provenance on the npm package page or with npm's
+package metadata and provenance display. The workflow uses `--provenance`;
+provenance visibility also depends on npm and GitHub availability.
 
 ## First 2.0.1 release
 
@@ -69,6 +91,6 @@ git push origin v2.0.1
 The new tag must point to the reviewed `2.0.1` commit and match both package
 versions.
 
-Monitor the workflow and npm package pages. Core must publish successfully
-before the CLI step runs. No package is published by local development
-commands.
+No package is published by local development commands. Future patch releases
+follow the same process with a new version such as `2.0.2`; never reuse an
+existing npm version or move an existing release tag.

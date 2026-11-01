@@ -36,4 +36,23 @@ state, lock cleanup, and recovery paths. For parser changes, add realistic
 Markdown fixtures and unsafe-input cases. Run the independent packed consumer
 when package exports, dependencies, or the CLI executable change.
 
-Only maintainers may release. Update package versions, `CHANGELOG.md`, and lockfiles together. The release workflow is manual, requires explicit publish input and environment approval, and must never publish unreviewed changes.
+Only maintainers may release. Update package versions, `CHANGELOG.md`, and lockfiles together. The tag-driven [`publish.yml`](./.github/workflows/publish.yml) workflow validates the tag and both packages, then uses npm Trusted Publishing through OIDC. It does not use a stored npm token or a GitHub environment. See the [release guide](./docs/release.md); never publish unreviewed changes.
+
+## Architecture and extension points
+
+- Keep GitHub access, parsing, validation, normalization, diagnostics, and the
+  stable `Project` shape in Core.
+- Keep command parsing, file discovery, output generation, and local
+  orchestration in CLI.
+- Add Core APIs with public types, focused tests, and an export from
+  `packages/core/src/index.ts`.
+- Add CLI commands through the existing command parser and public Core APIs.
+- Add output formats in `packages/cli/src/output.ts` with deterministic
+  escaping, atomic writes, and unchanged-file tests.
+- Add parser behavior with realistic Markdown fixtures, aliases, malformed
+  input, and unsafe URL tests.
+- Add examples under `examples/` that consume generated data and never expose
+  GitHub tokens.
+
+See [architecture](./docs/architecture.md), [testing](./docs/testing.md), and
+the [roadmap](./docs/roadmap.md) before proposing a new abstraction.

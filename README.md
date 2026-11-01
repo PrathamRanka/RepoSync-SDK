@@ -177,7 +177,7 @@ Core exports `RepoSyncError`, `ConfigurationError`, `GitHubAPIError`, `GitHubAut
 
 Run `reposync init --workflow` to create a manual workflow starter. It uses Node 24, checks out the repository, and passes `GITHUB_TOKEN` only to the sync command. Review and customize the workflow before enabling schedules or committing generated output.
 
-The repository CI workflow runs on pushes and pull requests. It validates the lockfile, formatting, lint, typecheck, tests, builds, package contents, and dependency audit. The generated workflow includes manual and scheduled triggers, concurrency protection, explicit contents write permission, and conditional commits. Review permissions and paths before enabling it. The release workflow is manual and does not publish or create a release unless explicitly dispatched with the publish input enabled.
+The repository CI workflow runs on pushes and pull requests. It validates the lockfile, formatting, lint, typecheck, tests, builds, package contents, and dependency audit. The generated workflow includes manual and scheduled triggers, concurrency protection, explicit contents write permission, and conditional commits. Review permissions and paths before enabling it.
 
 ## Release automation
 
@@ -188,8 +188,20 @@ the artifacts, then publishes Core before CLI with npm Trusted Publishing
 stored in GitHub. The workflow never overwrites an existing npm version because
 npm rejects duplicate versions.
 
-Release preparation and the manual first-release procedure are documented in
-[docs/release.md](./docs/release.md). The release workflow is manual and does not publish or create a release unless explicitly dispatched with the publish input enabled.
+Release preparation and the tag-driven first-release procedure are documented
+in [docs/release.md](./docs/release.md).
+
+## Documentation and contribution
+
+- [Architecture](./docs/architecture.md)
+- [Configuration](./docs/configuration.md)
+- [CLI reference](./docs/cli.md)
+- [Troubleshooting](./docs/troubleshooting.md)
+- [Compatibility policy](./docs/compatibility.md)
+- [Roadmap](./docs/roadmap.md)
+- [Contributing](./CONTRIBUTING.md)
+- [Security](./SECURITY.md)
+- [Support](./SUPPORT.md)
 
 ## Development
 

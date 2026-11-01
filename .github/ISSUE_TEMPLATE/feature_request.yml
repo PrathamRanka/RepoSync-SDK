@@ -1,0 +1,32 @@
+name: Feature request
+description: Suggest a focused improvement to RepoSync
+title: "[feature] "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: Do not include credentials or private repository data.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and user value
+      description: What user problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the smallest useful behavior and compatibility concerns.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: textarea
+    id: scope
+    attributes:
+      label: Suggested package or documentation scope
+      placeholder: Core, CLI, example, documentation, or separate package

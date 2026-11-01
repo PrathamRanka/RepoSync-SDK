@@ -1,0 +1,48 @@
+name: Bug report
+description: Report a reproducible RepoSync problem
+title: "[bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: Do not include GitHub tokens, credentials, private repository data, or sensitive logs. Use the private security process for vulnerabilities.
+  - type: input
+    id: package
+    attributes:
+      label: Package and version
+      placeholder: "@reposync/core 2.0.1"
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: Node.js, pnpm, and operating system
+      placeholder: "Node 24.16.0, pnpm 11.20.0, Windows 11"
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command and minimal configuration
+      description: Remove secrets and private repository identifiers.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and logs
+    validations:
+      required: true

@@ -1,0 +1,28 @@
+name: Documentation improvement
+description: Report unclear, missing, or inaccurate documentation
+title: "[docs] "
+labels:
+  - documentation
+body:
+  - type: markdown
+    attributes:
+      value: Do not include credentials or private repository data.
+  - type: input
+    id: location
+    attributes:
+      label: Documentation location
+      placeholder: README.md, docs/configuration.md, or package README
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is unclear or incorrect?
+    validations:
+      required: true
+  - type: textarea
+    id: improvement
+    attributes:
+      label: Suggested improvement
+    validations:
+      required: true
