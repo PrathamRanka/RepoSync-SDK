@@ -40,6 +40,7 @@ import { RepoSync } from "@reposync/core";
 const reposync = new RepoSync({
   username: "your-github-username",
   token: process.env.GITHUB_TOKEN,
+  includePrivate: false,
   topics: ["portfolio"],
   filters: {
     topicMatch: "any",
@@ -53,6 +54,7 @@ const projects = await reposync.discover();
 ```
 
 `discover()` returns a stable, framework-independent `Project[]`. Tokens are never included in project output.
+Private repositories are excluded unless `includePrivate: true` is set and a GitHub token is available.
 
 ## Configuration files
 
@@ -91,7 +93,7 @@ export default defineConfig({
 });
 ```
 
-Important options are `username`, `token`, `topics`, `filters`, `excludeForks`, `excludeArchived`, `limit`, `sortBy`, `aliases`, `defaults`, `concurrency`, and `output`. Invalid values and unknown properties fail before API discovery.
+Important options are `username`, `token`, `includePrivate`, `topics`, `filters`, `excludeForks`, `excludeArchived`, `limit`, `sortBy`, `aliases`, `defaults`, `concurrency`, and `output`. Invalid values and unknown properties fail before API discovery.
 
 ## Overrides and precedence
 

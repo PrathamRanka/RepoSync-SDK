@@ -25,6 +25,7 @@ function mockClient(names: string[]) {
     rest: {
       repos: {
         listForUser: {},
+        listForAuthenticatedUser: {},
         get: async ({ repo }: { repo: string }) => ({ data: makeRepository(repo) }),
         listLanguages: async () => ({ data: { TypeScript: 100 } }),
         getReadme: async ({ repo }: { repo: string }) => ({
@@ -51,6 +52,28 @@ describe("RepoSync end-to-end", () => {
       name: "alpha",
       description: "README introduction",
       technologies: ["TypeScript"],
+    });
+  });
+
+  it("uses authenticated discovery only when private repositories are explicitly enabled", async () => {
+    const client = mockClient(["private-project"]);
+    let request: unknown;
+    client.paginate = async (endpoint: unknown, parameters: Record<string, unknown>) => {
+      request = { endpoint, parameters };
+      return [makeRepository("private-project")];
+    };
+    const projects = await new RepoSync({
+      username: "octocat",
+      token: "secret",
+      includePrivate: true,
+      client,
+    }).discover();
+    expect(projects).toHaveLength(1);
+    expect(request).toMatchObject({
+      parameters: {
+        visibility: "all",
+        affiliation: "owner,collaborator,organization_member",
+      },
     });
   });
 

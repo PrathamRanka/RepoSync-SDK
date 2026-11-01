@@ -64,4 +64,10 @@ describe("configuration", () => {
       ConfigurationError,
     );
   });
+
+  it("requires authentication for opt-in private discovery", () => {
+    expect(() => resolveConfig({ username: "octocat", includePrivate: true, token: "" })).toThrow(
+      /Private repository discovery requires/,
+    );
+  });
 });

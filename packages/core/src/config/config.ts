@@ -47,6 +47,7 @@ const configSchema = z
     username: z.string().trim().min(1),
     topics: z.array(z.string().trim().min(1)).default([]),
     token: z.string().optional(),
+    includePrivate: z.boolean().default(false),
     excludeForks: z.boolean().default(true),
     excludeArchived: z.boolean().default(true),
     limit: z.number().int().positive().max(1000).default(100),
@@ -169,9 +170,15 @@ export function resolveConfig(input: unknown): ResolvedRepoSyncConfig {
   }
 
   const data = result.data;
+  const token = data.token ?? process.env.GITHUB_TOKEN;
+  if (data.includePrivate && !token) {
+    throw new ConfigurationError(
+      "Private repository discovery requires a GitHub token via token or GITHUB_TOKEN.",
+    );
+  }
   return {
     ...data,
-    token: data.token ?? process.env.GITHUB_TOKEN,
+    token,
     aliases: data.aliases,
     filters: {
       ...data.filters,

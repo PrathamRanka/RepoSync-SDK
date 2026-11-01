@@ -32,6 +32,7 @@ export type GitHubClient = {
   rest: {
     repos: {
       listForUser: unknown;
+      listForAuthenticatedUser?: unknown;
       get: (parameters: Record<string, string>) => Promise<{ data: GitHubRepository }>;
       listLanguages: (
         parameters: Record<string, string>,
@@ -153,11 +154,18 @@ export async function discoverRepositories(
   client: GitHubClient = new Octokit({ auth: config.token }) as unknown as GitHubClient,
 ): Promise<RepositoryDetails[]> {
   try {
-    const repositories = await client.paginate(client.rest.repos.listForUser, {
-      username: config.username,
-      per_page: 100,
-      sort: config.sortBy,
-    });
+    const repositories = config.includePrivate
+      ? await client.paginate(client.rest.repos.listForAuthenticatedUser ?? (() => undefined), {
+          visibility: "all",
+          affiliation: "owner,collaborator,organization_member",
+          per_page: 100,
+          sort: config.sortBy,
+        })
+      : await client.paginate(client.rest.repos.listForUser, {
+          username: config.username,
+          per_page: 100,
+          sort: config.sortBy,
+        });
     if (!repositories.every(isRepository))
       throw new GitHubAPIError("GitHub returned a malformed repository response.", 0);
     const selected = repositories

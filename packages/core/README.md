@@ -9,6 +9,7 @@ Use it to power your developer portfolio without manually maintaining project de
 ## Features
 
 - **GitHub discovery:** Fetch repositories from a GitHub username with pagination support.
+- **Private repositories:** Opt in to authenticated owner, collaborator, and organization repository discovery.
 - **Repository filtering:** Filter by topics, stars, forks, and archived status.
 - **README parsing:** Extract project introductions, technologies, features, demo links, and images.
 - **Custom conventions:** Configure README section aliases to match your documentation style.
@@ -80,6 +81,7 @@ that file-based discovery directly.
 | `username`        | GitHub username to discover repositories from                     |
 | `topics`          | Repository topics used for filtering                              |
 | `token`           | Optional GitHub personal access token                             |
+| `includePrivate`  | Opt in to authenticated private repository discovery              |
 | `excludeForks`    | Exclude forked repositories                                       |
 | `excludeArchived` | Exclude archived repositories                                     |
 | `limit`           | Maximum number of repositories to process                         |
@@ -91,6 +93,11 @@ that file-based discovery directly.
 | `output`          | JSON output path and format used by the CLI                       |
 
 For authenticated requests, provide a GitHub token through the `token` option or the `GITHUB_TOKEN` environment variable.
+
+Set `includePrivate: true` explicitly to use GitHub's authenticated repository
+endpoint. Private discovery requires a token with access to the repositories;
+the token is never included in `Project` output. Review generated output and
+repository permissions before publishing private project metadata.
 
 ```env
 GITHUB_TOKEN=your_github_token
