@@ -1,0 +1,9 @@
+[
+  {
+    "fullName": "octocat/example-project",
+    "title": "Example project",
+    "description": "Generated RepoSync project metadata.",
+    "technologies": ["TypeScript"],
+    "url": "https://github.com/octocat/example-project"
+  }
+]

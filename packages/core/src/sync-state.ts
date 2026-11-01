@@ -1,11 +1,12 @@
 import { createHash } from "node:crypto";
-import { mkdir, open, readFile, rename, unlink, writeFile } from "node:fs/promises";
+import { mkdir, open, readFile, rename, stat, unlink, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { z } from "zod";
 import { ConfigurationError } from "./errors.js";
 import type { Project } from "./types/index.js";
 
 export const SYNC_STATE_VERSION = 1;
+const LOCK_MAX_AGE_MS = 30 * 60 * 1000;
 
 const stateSchema = z.object({
   version: z.literal(SYNC_STATE_VERSION),
@@ -112,9 +113,21 @@ export async function withSyncLock<T>(file: string, operation: () => Promise<T>)
     handle = await open(lockFile, "wx");
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "EEXIST") {
-      throw new ConfigurationError(`RepoSync synchronization is already running: ${lockFile}`);
+      try {
+        const lock = await stat(lockFile);
+        if (Date.now() - lock.mtimeMs > LOCK_MAX_AGE_MS) {
+          await unlink(lockFile);
+          handle = await open(lockFile, "wx");
+        }
+      } catch (staleError) {
+        if ((staleError as NodeJS.ErrnoException).code !== "EEXIST") throw staleError;
+      }
+      if (!handle) {
+        throw new ConfigurationError(`RepoSync synchronization is already running: ${lockFile}`);
+      }
+    } else {
+      throw error;
     }
-    throw error;
   }
   try {
     return await operation();

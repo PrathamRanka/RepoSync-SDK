@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RepoSync static portfolio</title>
+    <style>
+      body {
+        background: #111827;
+        color: #f3f4f6;
+        font: 16px system-ui;
+        margin: auto;
+        max-width: 72rem;
+        padding: 3rem 1.5rem;
+      }
+      .grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+      }
+      article {
+        border: 1px solid #374151;
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+      }
+      a {
+        color: #67e8f9;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Projects</h1>
+    <section id="projects" class="grid"></section>
+    <script type="module">
+      const projects = await fetch("./projects.json").then((response) => response.json());
+      const container = document.querySelector("#projects");
+      for (const project of projects) {
+        const article = document.createElement("article");
+        const title = document.createElement("h2");
+        const description = document.createElement("p");
+        const link = document.createElement("a");
+        title.textContent = project.title;
+        description.textContent = project.description;
+        link.textContent = "View on GitHub";
+        link.href = project.url;
+        article.append(title, description, link);
+        container.append(article);
+      }
+    </script>
+  </body>
+</html>

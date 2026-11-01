@@ -21,4 +21,19 @@ Use descriptive branches such as `feat/config-loader` or `fix/readme-links`. Use
 
 Pull requests should explain the user-visible change, compatibility impact, tests run, and documentation updates. CI must pass before review.
 
+## Adding functionality
+
+Core changes must remain framework-independent and use injected clients for
+network tests. Add or update the public type and error contract before wiring
+CLI behavior. New formatters belong in `packages/cli/src/output.ts`, must be
+deterministic, preserve the normalized `Project` shape, and need escaping and
+unchanged-file tests. New framework examples belong under `examples/`, consume
+generated data rather than copying Core internals, and must document how tokens
+stay server-side.
+
+For synchronization changes, test successful, repeated, failed, corrupted
+state, lock cleanup, and recovery paths. For parser changes, add realistic
+Markdown fixtures and unsafe-input cases. Run the independent packed consumer
+when package exports, dependencies, or the CLI executable change.
+
 Only maintainers may release. Update package versions, `CHANGELOG.md`, and lockfiles together. The release workflow is manual, requires explicit publish input and environment approval, and must never publish unreviewed changes.

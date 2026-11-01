@@ -1,0 +1,32 @@
+body {
+  margin: 0;
+  background: #111827;
+  color: #f3f4f6;
+  font:
+    16px/1.6 system-ui,
+    sans-serif;
+}
+
+main {
+  margin: auto;
+  max-width: 72rem;
+  padding: 4rem 1.5rem;
+}
+
+.eyebrow,
+.tags,
+a {
+  color: #67e8f9;
+}
+
+.grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+article {
+  border: 1px solid #374151;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}

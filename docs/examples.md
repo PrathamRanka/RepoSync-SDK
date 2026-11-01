@@ -16,3 +16,9 @@ The example intentionally reads `src/projects.json` locally. Applications using
 Next.js, React, Astro, or another framework should generate the same data at
 build time and import or load it from their own application layer. RepoSync
 Core does not make browser-rendering API requests.
+
+Additional consumer examples:
+
+- [Next.js App Router](../examples/next-app/)
+- [Vite + React](../examples/vite-react/)
+- [Static site](../examples/static-site/)

@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   verify:
-    name: Node ${{ matrix.node }}
+    name: ${{ matrix.os }} / Node ${{ matrix.node }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -35,11 +35,9 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
-
-      - run: mkdir -p .artifacts && pnpm --filter @reposync/core pack --pack-destination .artifacts && pnpm --filter @reposync/cli pack --pack-destination .artifacts
-
-      - run: tar -tf .artifacts/reposync-core-1.0.0.tgz | grep -E 'package/(dist/index.js|dist/index.d.ts|package.json|README.md|LICENSE)$'
-
-      - run: tar -tf .artifacts/reposync-cli-1.0.0.tgz | grep -E 'package/(dist/index.js|dist/index.d.ts|package.json|README.md|LICENSE)$'
+      - run: pnpm validate:packages
+      - run: node scripts/prepare-artifacts.mjs
+      - run: pnpm --filter @reposync/core pack --pack-destination .artifacts
+      - run: pnpm --filter @reposync/cli pack --pack-destination .artifacts
 
       - run: pnpm audit --audit-level high

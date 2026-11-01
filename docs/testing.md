@@ -29,3 +29,7 @@ pnpm run verify
 
 GitHub-hosted workflow execution and authenticated API checks remain external
 tests; the repository only validates generated workflow structure locally.
+
+CI uses a Windows/macOS/Linux matrix and validates package build contents
+through the cross-platform `pnpm validate:packages` script rather than
+Unix-only archive commands.

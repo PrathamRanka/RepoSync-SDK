@@ -37,4 +37,26 @@ describe("GitHub diagnostics", () => {
     });
     expect(checks.connectivity.status).toBe("skipped");
   });
+
+  it.each([
+    [401, "GitHub rejected the configured token."],
+    [403, "GitHub rate limits or permissions prevented the diagnostic request."],
+    [429, "GitHub rate limits or permissions prevented the diagnostic request."],
+  ])("maps HTTP %s to an actionable diagnostic", async (status, message) => {
+    const config = resolveConfig({ username: "octocat", token: "secret-token" });
+    const checks = await diagnoseGitHub(config, {
+      paginate: async () => [],
+      rest: {
+        listForUser: {},
+        rateLimit: {
+          get: async () => {
+            throw Object.assign(new Error("token secret-token"), { status });
+          },
+        },
+        repos: {},
+      },
+    });
+    expect(checks.connectivity).toMatchObject({ status: "failed", message });
+    expect(JSON.stringify(checks)).not.toContain("secret-token");
+  });
 });

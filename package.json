@@ -9,6 +9,7 @@
     "test": "turbo test",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
+    "validate:packages": "node scripts/validate-packages.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
