@@ -51,3 +51,18 @@ export type ReadmeData = {
   imageUrls: string[];
   introduction: string | null;
 };
+
+export type QualityField = "description" | "technologies" | "features" | "demoUrl" | "image";
+
+export type QualityFinding = {
+  field: QualityField;
+  severity: "warning" | "info";
+  message: string;
+  suggestion: string;
+};
+
+export type MetadataQualityReport = {
+  score: number;
+  checkedFields: QualityField[];
+  findings: QualityFinding[];
+};

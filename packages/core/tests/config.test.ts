@@ -51,4 +51,17 @@ describe("configuration", () => {
     const input = { username: "octocat", aliases: { technologies: ["Stack"] } };
     expect(defineConfig(input)).toBe(input);
   });
+
+  it("validates output formats and quality fields", () => {
+    const config = resolveConfig({
+      username: "octocat",
+      output: { file: "projects.yaml", format: "yaml" },
+      quality: { required: ["description", "image"] },
+    });
+    expect(config.output.format).toBe("yaml");
+    expect(config.quality.required).toEqual(["description", "image"]);
+    expect(() => resolveConfig({ username: "octocat", output: { format: "toml" } })).toThrow(
+      ConfigurationError,
+    );
+  });
 });

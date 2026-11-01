@@ -5,6 +5,7 @@ export { loadConfig } from "./config/loader.js";
 export type { LoadedConfig } from "./config/loader.js";
 export { parseReadme } from "./parser/readme-parser.js";
 export { normalizeProject } from "./normalizer.js";
+export { analyzeProjectQuality, analyzeProjectsQuality } from "./quality.js";
 export { discoverRepositories, repositoryMatches } from "./github/repositories.js";
 export { loadOverrides } from "./overrides/overrides.js";
 export * from "./types/index.js";

@@ -9,12 +9,12 @@ GitHub API
    |-- Octokit pagination and repository filtering
    |-- Remark README extraction
    |-- Zod configuration and override validation
-   |-- deterministic normalization and error hierarchy
+   |-- deterministic normalization, quality analysis, and error hierarchy
    |
 @reposync/cli
    |-- config discovery
    |-- validation, preview, list, doctor
-   |-- atomic JSON generation
+   |-- atomic multi-format generation (JSON, TypeScript, YAML, Markdown)
    |-- optional workflow bootstrap
 ```
 
@@ -40,11 +40,12 @@ packages/core/src/
   parser/       README extraction
   overrides/    JSON override loading and validation
   normalizer.ts stable Project construction
+  quality.ts   explainable metadata quality analysis
   errors.ts     public error hierarchy
   reposync.ts   orchestration
 packages/cli/src/
   cli.ts        command parsing and command orchestration
-  output.ts     atomic deterministic JSON writes
+  output.ts     atomic deterministic multi-format writes
 ```
 
 The implementation intentionally avoids plugins, databases, UI components, and AI extraction.

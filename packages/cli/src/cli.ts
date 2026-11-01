@@ -1,7 +1,8 @@
 import { access, mkdir, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
-import { loadConfig, RepoSync } from "@reposync/core";
-import { writeProjects } from "./output.js";
+import { constants } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { analyzeProjectsQuality, loadConfig, RepoSync } from "@reposync/core";
+import { isOutputFormat, writeProjects, type OutputFormat } from "./output.js";
 
 type CliOptions = {
   command: string;
@@ -10,6 +11,8 @@ type CliOptions = {
   quiet: boolean;
   verbose: boolean;
   workflow: boolean;
+  format?: OutputFormat;
+  quality: boolean;
 };
 
 export function parseArgs(argv: string[]): CliOptions {
@@ -25,6 +28,8 @@ export function parseArgs(argv: string[]): CliOptions {
     quiet: rest.includes("--quiet"),
     verbose: rest.includes("--verbose"),
     workflow: rest.includes("--workflow"),
+    format: value("--format") as OutputFormat | undefined,
+    quality: rest.includes("--quality"),
   };
 }
 
@@ -54,6 +59,8 @@ Commands:
 
 Options:
   --config <path>  Configuration file path
+  --format <format> Output format: json, ts, yaml, or markdown
+  --quality         Include deterministic metadata quality findings in preview
   --json           Print machine-readable output
   --verbose        Print diagnostic details
   --quiet          Suppress normal output
@@ -100,6 +107,13 @@ export async function runCli(argv: string[], cwd = process.cwd()): Promise<numbe
           `name: RepoSync
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *"
+permissions:
+  contents: write
+concurrency:
+  group: reposync
+  cancel-in-progress: false
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -108,9 +122,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: npx reposync sync
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm dlx @reposync/cli sync
         env:
           GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+      - name: Commit generated output
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add projects.json
+          git diff --cached --quiet || git commit -m "chore: sync project metadata"
+          git push
 `,
         );
       }
@@ -127,20 +150,46 @@ jobs:
     }
     if (options.command === "doctor") {
       const loaded = await loadConfig(cwd, options.config);
+      const major = Number.parseInt(process.versions.node.split(".")[0] ?? "0", 10);
+      const outputDirectory = dirname(resolve(cwd, loaded.config.output.file));
+      let outputWritable = true;
+      try {
+        await access(outputDirectory, constants.W_OK);
+      } catch {
+        outputWritable = false;
+      }
+      const checks = {
+        node: { ok: major >= 24, value: process.version },
+        configuration: { ok: true, value: loaded.configPath },
+        overrides: { ok: true, value: loaded.overridesPath },
+        token: {
+          ok: true,
+          warning: !loaded.config.token,
+          value: Boolean(loaded.config.token),
+        },
+        outputDirectory: { ok: outputWritable, value: outputDirectory },
+      };
       print(
         {
-          node: process.version,
-          configPath: loaded.configPath,
-          authenticated: Boolean(loaded.config.token),
+          checks,
+          ok: Object.values(checks).every((check) => check.ok),
         },
         options,
       );
-      return 0;
+      return Object.values(checks).every((check) => check.ok) ? 0 : 1;
     }
     const loaded = await load({ ...options }, cwd);
     const projects = await loaded.reposync.discover();
     if (options.command === "preview") {
-      print(projects, options);
+      print(
+        options.quality
+          ? {
+              projects,
+              quality: analyzeProjectsQuality(projects, loaded.config.quality.required),
+            }
+          : projects,
+        options,
+      );
       return 0;
     }
     if (options.command === "list") {
@@ -156,7 +205,11 @@ jobs:
       return 0;
     }
     if (options.command === "sync") {
-      const output = await writeProjects(resolve(cwd, loaded.config.output.file), projects);
+      if (options.format && !isOutputFormat(options.format)) {
+        throw new Error(`Unsupported output format "${options.format}".`);
+      }
+      const format = options.format ?? loaded.config.output.format;
+      const output = await writeProjects(resolve(cwd, loaded.config.output.file), projects, format);
       print(
         { count: projects.length, changed: output, file: resolve(cwd, loaded.config.output.file) },
         options,

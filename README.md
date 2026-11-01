@@ -9,7 +9,7 @@ RepoSync is a framework-independent GitHub project discovery toolkit. It discove
 The workspace contains:
 
 - [`@reposync/core`](./packages/core/) — the typed discovery and normalization SDK.
-- [`@reposync/cli`](./packages/cli/) — configuration, preview, validation, and JSON generation commands.
+- [`@reposync/cli`](./packages/cli/) — configuration, preview, validation, diagnostics, and deterministic output generation.
 
 Repository snapshot: **0 stars, 0 forks, 0 open issues**, MIT licensed. These figures were checked against GitHub on 2026-11-01; they are not download or usage claims.
 
@@ -83,7 +83,10 @@ export default defineConfig({
   concurrency: 4,
   output: {
     file: "projects.json",
-    format: "json",
+    format: "json", // json | ts | yaml | markdown
+  },
+  quality: {
+    required: ["description", "technologies", "features", "demoUrl", "image"],
   },
 });
 ```
@@ -120,10 +123,10 @@ project override > global defaults > README data > GitHub metadata
 ```bash
 pnpm exec reposync init
 pnpm exec reposync validate
-pnpm exec reposync preview --json
+pnpm exec reposync preview --json --quality
 pnpm exec reposync list
-pnpm exec reposync sync
-pnpm reposync doctor
+pnpm exec reposync sync --format json
+pnpm exec reposync doctor --json
 ```
 
 | Command    | Purpose                                                                                                                  |
@@ -132,14 +135,18 @@ pnpm reposync doctor
 | `validate` | Validates configuration and overrides without GitHub API calls.                                                          |
 | `preview`  | Discovers and prints normalized projects without writing output.                                                         |
 | `list`     | Prints repository summaries from discovery.                                                                              |
-| `sync`     | Atomically writes the configured JSON output; unchanged content is not rewritten.                                        |
-| `doctor`   | Reports Node version, configuration discovery, and token presence.                                                       |
+| `sync`     | Atomically writes JSON, TypeScript, YAML, or Markdown output; unchanged content is not rewritten.                        |
+| `doctor`   | Reports Node version, configuration discovery, and token presence. Network diagnostics remain opt-in at this stage.      |
 
-Common flags are `--config <path>`, `--json`, `--verbose`, `--quiet`, `--workflow`, and `--help`. Exit code `0` means success, `1` means a configuration or runtime failure, and `2` means invalid CLI usage.
+Common flags are `--config <path>`, `--format <format>`, `--quality`, `--json`, `--verbose`, `--quiet`, `--workflow`, and `--help`. Exit code `0` means success, `1` means a configuration or runtime failure, and `2` means invalid CLI usage.
 
 ## Generated output
 
-`reposync sync` defaults to `projects.json`. It creates parent directories, writes through a temporary file, renames atomically, and skips rewriting identical content. The JSON is suitable for Next.js, React, Astro, static sites, and other applications. Generation runs server-side or at build time; never put `GITHUB_TOKEN` in browser code.
+`reposync sync` defaults to `projects.json`. Use `--format json|ts|yaml|markdown` or configure `output.format`. It creates parent directories, writes through a temporary file, renames atomically, and skips rewriting identical content. TypeScript output is importable and typed with `Project`; YAML and Markdown preserve the primary project metadata. Generation runs server-side or at build time; never put `GITHUB_TOKEN` in browser code.
+
+## Metadata quality
+
+Use `reposync preview --quality --json` to receive projects plus deterministic findings for configured fields. Quality reports explain each missing field and provide a remediation suggestion; they never invent or overwrite metadata. Configure checked fields with `quality.required`. The score is a transparent percentage of configured fields present, not an AI-generated assessment.
 
 ## README extraction
 
@@ -153,7 +160,7 @@ Core exports `RepoSyncError`, `ConfigurationError`, `GitHubAPIError`, `GitHubAut
 
 Run `reposync init --workflow` to create a manual workflow starter. It uses Node 24, checks out the repository, and passes `GITHUB_TOKEN` only to the sync command. Review and customize the workflow before enabling schedules or committing generated output.
 
-The repository CI workflow runs on pushes and pull requests. It validates the lockfile, formatting, lint, typecheck, tests, builds, package contents, and dependency audit. The release workflow is manual and does not publish or create a release unless explicitly dispatched with the publish input enabled.
+The repository CI workflow runs on pushes and pull requests. It validates the lockfile, formatting, lint, typecheck, tests, builds, package contents, and dependency audit. The generated workflow includes manual and scheduled triggers, concurrency protection, explicit contents write permission, and conditional commits. Review permissions and paths before enabling it. The release workflow is manual and does not publish or create a release unless explicitly dispatched with the publish input enabled.
 
 ## Development
 
@@ -178,6 +185,7 @@ Read the full guides:
 - [CLI reference](./docs/cli.md)
 - [Migration from 0.1.0](./docs/migration.md)
 - [Testing](./docs/testing.md)
+- [Metadata quality](./docs/quality.md)
 - [Security](./SECURITY.md)
 - [Contributing](./CONTRIBUTING.md)
 - [Support](./SUPPORT.md)

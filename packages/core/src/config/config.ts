@@ -61,10 +61,18 @@ const configSchema = z
     output: z
       .object({
         file: z.string().min(1).default("projects.json"),
-        format: z.literal("json").default("json"),
+        format: z.enum(["json", "ts", "yaml", "markdown"]).default("json"),
       })
       .strict()
       .default({ file: "projects.json", format: "json" }),
+    quality: z
+      .object({
+        required: z
+          .array(z.enum(["description", "technologies", "features", "demoUrl", "image"]))
+          .default(["description", "technologies"]),
+      })
+      .strict()
+      .default({ required: ["description", "technologies"] }),
     filters: filtersSchema.default({
       topicMatch: "any",
       includeForks: false,
