@@ -6,6 +6,8 @@ export type ProjectOverride = {
   title?: string;
   description?: string;
   tags?: string[];
+  technologies?: string[];
+  features?: string[];
   image?: string;
   images?: string[];
   demoUrl?: string;
@@ -38,4 +40,12 @@ export type Project = {
 
 export type RepoSyncOptions = RepoSyncConfigInput & {
   overrides?: unknown;
+};
+
+export type ReadmeData = {
+  technologies: string[];
+  features: string[];
+  demoUrl: string | null;
+  imageUrls: string[];
+  introduction: string | null;
 };

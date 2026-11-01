@@ -2,6 +2,7 @@
   "name": "reposync-sdk",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@11.20.0",
   "description": "GitHub-powered portfolio discovery SDK",
   "scripts": {
     "build": "turbo build",

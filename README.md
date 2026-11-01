@@ -112,16 +112,10 @@ The topic is configurable.
 import { RepoSync } from "@reposync/core";
 
 const reposync = new RepoSync({
-  github: {
-    username: "your-username",
-    token: process.env.GITHUB_TOKEN!,
-  },
-
-  discovery: {
-    topic: "portfolio",
-    includeForks: false,
-    includeArchived: false,
-  },
+  username: "your-username",
+  token: process.env.GITHUB_TOKEN,
+  topics: ["portfolio"],
+  filters: { topicMatch: "any", includeForks: false, includeArchived: false, minStars: 0 },
 });
 
 const projects = await reposync.discover();
@@ -134,11 +128,11 @@ console.log(projects);
 ```tsx
 {projects.map((project) => (
   <ProjectCard
-    key={project.id}
-    title={project.presentation.title}
-    description={project.presentation.description}
-    technologies={project.presentation.technologies}
-    image={project.presentation.image}
+    key={project.fullName}
+    title={project.title}
+    description={project.description}
+    technologies={project.technologies}
+    image={project.imageUrls[0] ?? null}
   />
 ))}
 ```
@@ -151,23 +145,19 @@ RepoSync supports global configuration through `reposync.config.ts`.
 import { defineConfig } from "@reposync/core";
 
 export default defineConfig({
-  github: {
-    username: "your-username",
-    token: process.env.GITHUB_TOKEN!,
-  },
-
-  discovery: {
-    topic: "portfolio",
+  username: "your-username",
+  token: process.env.GITHUB_TOKEN,
+  topics: ["portfolio"],
+  filters: {
+    topicMatch: "any",
     includeForks: false,
     includeArchived: false,
+    minStars: 0,
   },
-
-  presentation: {
-    description: "readme",
-    extractTechnologies: true,
-    extractFeatures: true,
-    extractImages: true,
-    extractDemoUrl: true,
+  aliases: {
+    technologies: ["technologies", "stack", "built with"],
+    features: ["features", "highlights"],
+    demos: ["demo", "live demo"],
   },
 });
 ```
@@ -215,66 +205,36 @@ Overrides allow developers to:
 - Mark projects as featured.
 - Control project ordering.
 
-### Description Modes
-
-RepoSync supports three description modes:
-
-| Mode | Behaviour |
-|---|---|
-| `github` | Uses GitHub repository description |
-| `readme` | Uses README introduction, falling back to GitHub description |
-| `custom` | Uses developer-provided description |
-
-Project-specific overrides take priority over automatically extracted information.
-
 ## Returned Project Structure
 
 RepoSync returns normalized project objects instead of exposing raw GitHub API responses.
 
 ```ts
-interface PortfolioProject {
-  id: number;
-
+interface Project {
   name: string;
-  slug: string;
-
-  source: {
-    githubUrl: string;
-    description: string | null;
-    readme: string | null;
-  };
-
-  metadata: {
-    stars: number;
-    forks: number;
-    topics: string[];
-    languages: Record<string, number>;
-    homepage: string | null;
-    updatedAt: string;
-  };
-
-  extracted: {
-    introduction: string | null;
-    features: string[];
-    technologies: string[];
-    demoUrl: string | null;
-    images: string[];
-  };
-
-  presentation: {
-    title: string;
-    description: string;
-    image: string | null;
-    technologies: string[];
-    featured: boolean;
-    order: number;
-  };
+  title: string;
+  fullName: string;
+  description: string;
+  githubDescription: string | null;
+  url: string;
+  homepage: string | null;
+  demoUrl: string | null;
+  imageUrls: string[];
+  tags: string[];
+  topics: string[];
+  technologies: string[];
+  features: string[];
+  introduction: string | null;
+  languages: Record<string, number>;
+  stars: number;
+  forks: number;
+  featured: boolean;
+  order: number | null;
+  updatedAt: string;
 }
 ```
 
-The returned object separates original GitHub data, extracted information, and portfolio presentation data.
-
-This makes customization predictable without losing the original repository information.
+Overrides take precedence over global defaults, which take precedence over README data and then GitHub metadata.
 
 ## Architecture
 
@@ -285,7 +245,7 @@ RepoSync uses a framework-independent core.
 | TypeScript | SDK implementation |
 | Node.js 24+ | Runtime |
 | GitHub REST API | Repository discovery |
-| Native Fetch | HTTP communication |
+| Octokit | GitHub API communication and pagination |
 | Zod | Runtime validation |
 | remark | Markdown parsing |
 | remark-gfm | GitHub Flavored Markdown |
@@ -301,13 +261,13 @@ RepoSync uses a framework-independent core.
 - [x] Product architecture
 - [x] Configuration and customization design
 - [ ] pnpm workspace initialization
-- [ ] GitHub API client
-- [ ] Repository discovery
-- [ ] README extraction
-- [ ] Project normalization
-- [ ] JSON override engine
+- [x] GitHub API client
+- [x] Repository discovery
+- [x] README extraction
+- [x] Project normalization
+- [x] JSON override engine
 - [ ] Next.js example
-- [ ] Testing and npm release
+- [x] Testing and npm release
 
 ### v0.2 — Automatic Synchronization
 

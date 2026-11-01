@@ -3,14 +3,32 @@ import { ConfigurationError } from "../errors.js";
 
 const projectDefaultsSchema = z
   .object({
+    title: z.string().optional(),
     description: z.string().optional(),
     tags: z.array(z.string()).optional(),
-    image: z.url().optional(),
-    images: z.array(z.url()).optional(),
-    demoUrl: z.url().optional(),
+    technologies: z.array(z.string()).optional(),
+    features: z.array(z.string()).optional(),
+    image: z.string().min(1).optional(),
+    images: z.array(z.string().min(1)).optional(),
+    demoUrl: z.string().min(1).optional(),
     featured: z.boolean().optional(),
+    order: z.number().int().optional(),
   })
   .strict();
+
+const aliasesSchema = z.object({
+  technologies: z.array(z.string().trim().min(1)).default(["technologies", "technology", "tech stack", "built with"]),
+  features: z.array(z.string().trim().min(1)).default(["features", "key features"]),
+  demos: z.array(z.string().trim().min(1)).default(["demo", "live demo", "live", "website"]),
+}).strict();
+
+const filtersSchema = z.object({
+  topics: z.array(z.string().trim().min(1)).optional(),
+  topicMatch: z.enum(["any", "all"]).default("any"),
+  includeForks: z.boolean().default(false),
+  includeArchived: z.boolean().default(false),
+  minStars: z.number().int().nonnegative().default(0),
+}).strict();
 
 const configSchema = z
   .object({
@@ -22,14 +40,52 @@ const configSchema = z
     limit: z.number().int().positive().max(1000).default(100),
     sortBy: z.enum(["updated", "stars", "name"]).default("updated"),
     defaults: projectDefaultsSchema.default({}),
+    aliases: aliasesSchema.default({
+      technologies: ["technologies", "technology", "tech stack", "built with"],
+      features: ["features", "key features"],
+      demos: ["demo", "live demo", "live", "website"],
+    }),
+    filters: filtersSchema.default({
+      topicMatch: "any",
+      includeForks: false,
+      includeArchived: false,
+      minStars: 0,
+    }),
   })
   .strict();
 
 export type RepoSyncConfigInput = z.input<typeof configSchema>;
-export type ResolvedRepoSyncConfig = z.output<typeof configSchema>;
+export type ResolvedRepoSyncConfig = z.output<typeof configSchema> & {
+  aliases: z.output<typeof aliasesSchema>;
+  filters: z.output<typeof filtersSchema>;
+};
 
 export function resolveConfig(input: unknown): ResolvedRepoSyncConfig {
-  const result = configSchema.safeParse(input);
+  const candidate = input && typeof input === "object" ? input as Record<string, unknown> : input;
+  const normalized = candidate && typeof candidate === "object" && "github" in candidate
+    ? {
+        ...(candidate.github as Record<string, unknown>),
+        ...(((candidate as Record<string, unknown>).discovery as Record<string, unknown> | undefined) ?? {}),
+        aliases: (candidate as Record<string, unknown>).aliases,
+      }
+    : candidate;
+  const source = normalized && typeof normalized === "object"
+    ? {
+        ...normalized,
+        topics: (normalized as Record<string, unknown>).topics ??
+          ((normalized as Record<string, unknown>).topic ? [(normalized as Record<string, unknown>).topic] : undefined),
+        excludeForks: (normalized as Record<string, unknown>).excludeForks,
+        excludeArchived: (normalized as Record<string, unknown>).excludeArchived,
+        filters: {
+          ...((normalized as Record<string, unknown>).filters as Record<string, unknown> | undefined),
+          ...(typeof (normalized as Record<string, unknown>).excludeForks === "boolean"
+            ? { includeForks: !(normalized as Record<string, unknown>).excludeForks } : {}),
+          ...(typeof (normalized as Record<string, unknown>).excludeArchived === "boolean"
+            ? { includeArchived: !(normalized as Record<string, unknown>).excludeArchived } : {}),
+        },
+      }
+    : normalized;
+  const result = configSchema.safeParse(source);
 
   if (!result.success) {
     const details = result.error.issues
@@ -44,8 +100,21 @@ export function resolveConfig(input: unknown): ResolvedRepoSyncConfig {
     );
   }
 
+  const data = result.data;
   return {
-    ...result.data,
-    token: result.data.token ?? process.env.GITHUB_TOKEN,
+    ...data,
+    token: data.token ?? process.env.GITHUB_TOKEN,
+    aliases: data.aliases,
+    filters: {
+      ...data.filters,
+      topics: data.filters?.topics ?? data.topics,
+      includeForks: data.filters?.includeForks ?? !data.excludeForks,
+      includeArchived: data.filters?.includeArchived ?? !data.excludeArchived,
+    },
   };
+}
+
+export function defineConfig(input: RepoSyncConfigInput): RepoSyncConfigInput {
+  resolveConfig(input);
+  return input;
 }
