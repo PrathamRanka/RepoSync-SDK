@@ -11,11 +11,13 @@ Configure an npm trusted publisher for each package:
 - Organization/user: `PrathamRanka`
 - Repository: `RepoSync-SDK`
 - Workflow filename: `publish.yml`
-- Environment: `npm-release` (if configured in npm/GitHub)
+- Environment: leave blank
 
-The workflow requires `contents: read` and `id-token: write`. Do not add
-`NPM_TOKEN`, `NODE_AUTH_TOKEN`, or other npm credentials. Node 24 and npm
-11.5.1+ are installed by the workflow.
+Leave the **Environment** field blank in both npm Trusted Publisher
+configurations. The workflow does not use a GitHub environment. It requires
+`contents: read` and `id-token: write`. Do not add `NPM_TOKEN`,
+`NODE_AUTH_TOKEN`, or other npm credentials. Node 24 and npm 11.5.1+ are
+installed by the workflow.
 
 ## Preparing a release
 

@@ -17,7 +17,6 @@ jobs:
   publish:
     name: Validate and publish packages
     runs-on: ubuntu-latest
-    environment: npm-release
     steps:
       - name: Checkout
         uses: actions/checkout@v4
