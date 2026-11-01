@@ -1,6 +1,0 @@
-/*Authenticate GitHub API requests.
-Set required headers.
-Handle HTTP errors.
-Handle rate limits.
-Parse JSON responses.
-Support injected fetch. */
