@@ -1,192 +1,181 @@
 # @reposync/core
 
-**GitHub-powered portfolio discovery SDK.**
-
-RepoSync discovers your GitHub repositories, extracts useful project information from their READMEs, and transforms everything into structured, portfolio-ready data.
-
-Use it to power your developer portfolio without manually maintaining project details.
-
-## Features
-
-- **GitHub discovery:** Fetch repositories from a GitHub username with pagination support.
-- **Private repositories:** Opt in to authenticated owner, collaborator, and organization repository discovery.
-- **Repository filtering:** Filter by topics, stars, forks, and archived status.
-- **README parsing:** Extract project introductions, technologies, features, demo links, and images.
-- **Custom conventions:** Configure README section aliases to match your documentation style.
-- **Project overrides:** Customize titles, descriptions, tags, images, demo URLs, featured status, and display order.
-- **Configurable defaults:** Define global defaults and override individual projects.
-- **Bounded concurrency:** Process repositories concurrently without launching unbounded requests.
-- **Type-safe output:** Validate configuration and return structured TypeScript-friendly project data.
+Framework-independent GitHub repository discovery for Node.js applications.
+RepoSync Core uses Octokit for GitHub access, Remark for deterministic README
+metadata extraction, and Zod for external configuration validation.
 
 ## Requirements
 
-- Node.js 24 or later
-- A GitHub account
+- Node.js 24 or newer
+- A GitHub username
+- A token is optional for public repositories and required for private discovery
 
 ## Installation
 
 ```bash
-npm install @reposync/core
+npm install @reposync/core@2.0.0
 ```
-
-Or:
 
 ```bash
-pnpm add @reposync/core
+pnpm add @reposync/core@2.0.0
 ```
 
-## Quick Start
+## Quick start
 
 ```ts
 import { RepoSync } from "@reposync/core";
 
-const reposync = new RepoSync({
+const sync = new RepoSync({
   username: "your-github-username",
+  topics: ["portfolio"],
+  filters: {
+    topicMatch: "any",
+    includeForks: false,
+    includeArchived: false,
+    minStars: 0,
+  },
 });
 
-const projects = await reposync.discover();
-
+const projects = await sync.discover();
 console.log(projects);
 ```
 
-RepoSync discovers repositories and returns normalized project data that you can use in any frontend or backend application.
+`discover()` returns a stable, framework-independent `Project[]`. Core does
+not render UI, write files, or include GitHub tokens in project output.
 
 ## Configuration
 
-Pass configuration directly to the `RepoSync` constructor.
+`resolveConfig()` validates and applies defaults. `defineConfig()` validates a
+configuration for use in TypeScript files. The CLI uses the same schema.
 
 ```ts
 import { RepoSync } from "@reposync/core";
 
-const reposync = new RepoSync({
+const sync = new RepoSync({
   username: "your-github-username",
-  topics: ["typescript", "react"],
-  excludeForks: true,
-  excludeArchived: true,
-  limit: 50,
-  sortBy: "updated",
-});
-
-const projects = await reposync.discover();
-```
-
-The CLI can discover the same configuration from `reposync.config.ts` or
-`reposync.config.json`. Core applications can use `loadConfig()` when they need
-that file-based discovery directly.
-
-### Configuration options
-
-| Option            | Description                                                       |
-| ----------------- | ----------------------------------------------------------------- |
-| `username`        | GitHub username to discover repositories from                     |
-| `topics`          | Repository topics used for filtering                              |
-| `token`           | Optional GitHub personal access token                             |
-| `includePrivate`  | Opt in to authenticated private repository discovery              |
-| `excludeForks`    | Exclude forked repositories                                       |
-| `excludeArchived` | Exclude archived repositories                                     |
-| `limit`           | Maximum number of repositories to process                         |
-| `sortBy`          | Sort repositories by `updated`, `stars`, or `name`                |
-| `defaults`        | Global defaults for project metadata                              |
-| `aliases`         | README heading aliases for technologies, features, and demos      |
-| `filters`         | Any/all topic matching, fork/archive inclusion, and minimum stars |
-| `concurrency`     | Maximum concurrent repository detail loads                        |
-| `output`          | JSON output path and format used by the CLI                       |
-
-For authenticated requests, provide a GitHub token through the `token` option or the `GITHUB_TOKEN` environment variable.
-
-Set `includePrivate: true` explicitly to use GitHub's authenticated repository
-endpoint. Private discovery requires a token with access to the repositories;
-the token is never included in `Project` output. Review generated output and
-repository permissions before publishing private project metadata.
-
-```env
-GITHUB_TOKEN=your_github_token
-```
-
-Do not expose your token in client-side code or commit it to version control.
-
-## Project Overrides
-
-GitHub metadata and README content provide a starting point. You can customize individual projects using overrides.
-
-```ts
-import { RepoSync } from "@reposync/core";
-
-const reposync = new RepoSync({
-  username: "your-github-username",
-
-  defaults: {
-    featured: false,
+  token: process.env.GITHUB_TOKEN,
+  includePrivate: false,
+  filters: {
+    topics: ["typescript", "react"],
+    topicMatch: "all",
+    includeForks: false,
+    includeArchived: false,
+    minStars: 1,
   },
+  sortBy: "updated",
+  limit: 50,
+  concurrency: 4,
+});
+```
 
+Important options are `username`, `token`, `includePrivate`, `topics`,
+`filters`, `excludeForks`, `excludeArchived`, `limit`, `sortBy`, `aliases`,
+`defaults`, `overrides`, and `concurrency`. Topic matching is
+case-insensitive. `minStars` is inclusive, and limits are applied after
+filtering and sorting.
+
+Private discovery is opt-in:
+
+```ts
+const sync = new RepoSync({
+  username: "your-github-username",
+  token: process.env.GITHUB_TOKEN,
+  includePrivate: true,
+});
+```
+
+Never expose `GITHUB_TOKEN` to browser code or commit it to source control.
+
+## README extraction
+
+README parsing is deterministic and uses Markdown ASTs rather than custom
+regular expressions. Core extracts introductions, technologies, features,
+HTTP(S) demo links, safe images, nested lists, tables, and paragraphs. Code
+blocks are not treated as metadata. Configure section aliases when a project
+uses different headings:
+
+```ts
+const sync = new RepoSync({
+  username: "your-github-username",
+  aliases: {
+    technologies: ["stack", "built with"],
+    features: ["capabilities"],
+    demos: ["deployment", "live site"],
+  },
+});
+```
+
+Unsafe URL schemes are rejected. Relative image paths and HTTP(S) image URLs
+are supported. Missing READMEs are valid; malformed API responses, excessive
+README content, authentication failures, rate limits, and other GitHub errors
+are surfaced through the exported error hierarchy.
+
+## Defaults and overrides
+
+Metadata is resolved in this order:
+
+```text
+individual override > global defaults > README metadata > GitHub metadata
+```
+
+Explicit `false`, `0`, empty strings, and empty arrays are preserved. Full
+repository keys such as `owner/repository` take precedence over short-name
+compatibility entries.
+
+```ts
+const sync = new RepoSync({
+  username: "your-github-username",
+  defaults: { featured: false },
   overrides: {
-    "owner/repository-name": {
-      title: "Custom Project Title",
-      description: "A custom project description.",
-      tags: ["TypeScript", "Backend", "Open Source"],
+    "owner/repository": {
+      title: "Custom title",
+      tags: ["TypeScript"],
       demoUrl: "https://example.com",
       featured: true,
       order: 1,
     },
   },
 });
-
-const projects = await reposync.discover();
 ```
 
-Overrides allow you to control how projects appear without changing their GitHub repositories or READMEs.
-
-## Project Output
-
-`discover()` returns an array of normalized `Project` objects.
-
-The output includes:
-
-| Property            | Description                      |
-| ------------------- | -------------------------------- |
-| `name`              | Repository name                  |
-| `title`             | Display title                    |
-| `fullName`          | Repository owner and name        |
-| `description`       | Resolved project description     |
-| `githubDescription` | Original GitHub description      |
-| `url`               | GitHub repository URL            |
-| `homepage`          | GitHub homepage URL              |
-| `demoUrl`           | Resolved demo URL                |
-| `imageUrls`         | Project image URLs               |
-| `tags`              | Resolved project tags            |
-| `topics`            | GitHub repository topics         |
-| `technologies`      | Extracted technologies           |
-| `features`          | Extracted project features       |
-| `introduction`      | Extracted README introduction    |
-| `languages`         | GitHub language statistics       |
-| `stars`             | Repository stars                 |
-| `forks`             | Repository forks                 |
-| `featured`          | Whether the project is featured  |
-| `order`             | Optional display order           |
-| `updatedAt`         | Last repository update timestamp |
-
-Import the `Project` type when you need to type your application data.
+## Project output
 
 ```ts
 import type { Project } from "@reposync/core";
 
-const projects: Project[] = await reposync.discover();
+const projects: Project[] = await sync.discover();
 ```
 
-## Framework Compatibility
+`Project` includes repository identity and URLs, resolved description and
+title, tags, topics, technologies, features, README introduction, images,
+demo URL, language statistics, stars, forks, featured state, order, and
+`updatedAt`. The shape is framework-independent and stable for consumers.
 
-RepoSync Core is framework-independent.
+## Public API
 
-You can use it with:
+The package exports `RepoSync`, `Project`, `resolveConfig`, `defineConfig`,
+`loadConfig`, `parseReadme`, `normalizeProject`, `discoverRepositories`,
+`createGitHubClient`, `loadOverrides`, `diagnoseGitHub`, quality analysis,
+sync-state helpers, and the typed error hierarchy.
 
-- Next.js
-- React
-- Astro
-- Express
-- Node.js applications
-- Static site generators
+## Errors and limitations
 
-The SDK handles discovery and normalization. Your application controls how the resulting project data is stored, rendered, or consumed.
+Catch `ConfigurationError`, `GitHubAuthenticationError`,
+`GitHubRateLimitError`, `GitHubAPIError`, and `RepositoryNotFoundError` when
+applications need specific handling. API causes and rate-limit information are
+preserved where available, while configured tokens are redacted.
+
+Discovery performs complete paginated repository discovery. Incremental CLI
+sync classifies normalized projects using local fingerprints; it does not use
+ETag or conditional GitHub requests. GitHub API availability, permissions,
+rate limits, and repository README quality can affect results.
+
+## Further documentation
+
+- [Configuration guide](../../docs/configuration.md)
+- [Architecture](../../docs/architecture.md)
+- [Testing guide](../../docs/testing.md)
+- [Root project documentation](../../README.md)
 
 ## License
 

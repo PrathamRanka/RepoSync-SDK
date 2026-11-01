@@ -1,7 +1,16 @@
 {
   "name": "reposync-sdk",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PrathamRanka/RepoSync-SDK.git",
+    "directory": "."
+  },
+  "homepage": "https://github.com/PrathamRanka/RepoSync-SDK#readme",
+  "bugs": {
+    "url": "https://github.com/PrathamRanka/RepoSync-SDK/issues"
+  },
   "packageManager": "pnpm@11.20.0",
   "description": "GitHub-powered portfolio discovery SDK",
   "scripts": {
@@ -16,7 +25,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "eslint": "^10.14.0",
-    "prettier": "^3.6.0",
+    "prettier": "3.9.10",
     "turbo": "^2.5.0",
     "typescript": "^5.9.0",
     "typescript-eslint": "^8.72.1"

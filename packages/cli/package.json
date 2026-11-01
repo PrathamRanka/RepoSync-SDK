@@ -1,7 +1,16 @@
 {
   "name": "@reposync/cli",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "CLI for discovering and generating RepoSync project data",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PrathamRanka/RepoSync-SDK.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/PrathamRanka/RepoSync-SDK/tree/main/packages/cli",
+  "bugs": {
+    "url": "https://github.com/PrathamRanka/RepoSync-SDK/issues"
+  },
   "type": "module",
   "bin": {
     "reposync": "./dist/index.js"
@@ -32,7 +41,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@reposync/core": "workspace:*"
+    "@reposync/core": "workspace:2.0.0"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",

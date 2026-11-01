@@ -1,0 +1,86 @@
+name: Publish to npm
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: npm-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Validate and publish packages
+    runs-on: ubuntu-latest
+    environment: npm-release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Ensure compatible npm
+        shell: bash
+        run: |
+          npm install --global npm@11.5.1
+          npm --version
+
+      - name: Validate tag and package versions
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          test "$TAG_NAME" != "${TAG_NAME#v}"
+          node scripts/validate-release.mjs --tag "$TAG_NAME"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify repository
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          export REPOSYNC_EXPECTED_VERSION="${TAG_NAME#v}"
+          pnpm format:check
+          pnpm lint
+          pnpm typecheck
+          pnpm test
+          pnpm build
+          pnpm validate:packages
+          pnpm audit --audit-level high
+
+      - name: Pack and inspect artifacts
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          rm -rf .artifacts
+          node scripts/prepare-artifacts.mjs
+          pnpm --filter @reposync/core pack --pack-destination .artifacts
+          pnpm --filter @reposync/cli pack --pack-destination .artifacts
+          node scripts/validate-release.mjs --tag "$TAG_NAME" --artifacts .artifacts
+
+      - name: Publish Core with npm Trusted Publishing
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        shell: bash
+        run: npm publish ".artifacts/reposync-core-${TAG_NAME#v}.tgz" --access public --provenance
+
+      - name: Publish CLI with npm Trusted Publishing
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        shell: bash
+        run: npm publish ".artifacts/reposync-cli-${TAG_NAME#v}.tgz" --access public --provenance

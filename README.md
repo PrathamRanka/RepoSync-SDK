@@ -4,7 +4,10 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![Node.js 24+](https://img.shields.io/badge/node-24%2B-339933.svg)](https://nodejs.org/)
 
-RepoSync is a framework-independent GitHub project discovery toolkit. It discovers repositories, parses README content, resolves metadata and overrides, and produces stable project data for portfolios, static sites, and build pipelines.
+RepoSync 2.0 is a framework-independent GitHub project discovery toolkit. It
+discovers repositories, parses README content, resolves metadata and overrides,
+and produces stable project data for portfolios, static sites, and build
+pipelines.
 
 The workspace contains:
 
@@ -23,8 +26,15 @@ Repository snapshot: **0 stars, 0 forks, 0 open issues**, MIT licensed. These fi
 ## Install
 
 ```bash
-pnpm add @reposync/core
-pnpm add -D @reposync/cli
+npm install @reposync/core@2.0.0
+npm install --save-dev @reposync/cli@2.0.0
+```
+
+With pnpm:
+
+```bash
+pnpm add @reposync/core@2.0.0
+pnpm add --save-dev @reposync/cli@2.0.0
 ```
 
 The packages are configured for public npm publishing. Use the package links for release status:
@@ -168,6 +178,18 @@ Core exports `RepoSyncError`, `ConfigurationError`, `GitHubAPIError`, `GitHubAut
 Run `reposync init --workflow` to create a manual workflow starter. It uses Node 24, checks out the repository, and passes `GITHUB_TOKEN` only to the sync command. Review and customize the workflow before enabling schedules or committing generated output.
 
 The repository CI workflow runs on pushes and pull requests. It validates the lockfile, formatting, lint, typecheck, tests, builds, package contents, and dependency audit. The generated workflow includes manual and scheduled triggers, concurrency protection, explicit contents write permission, and conditional commits. Review permissions and paths before enabling it. The release workflow is manual and does not publish or create a release unless explicitly dispatched with the publish input enabled.
+
+## Release automation
+
+Future `v*` tags run [the npm publishing workflow](./.github/workflows/publish.yml).
+It validates both package versions, runs all quality gates, packs and inspects
+the artifacts, then publishes Core before CLI with npm Trusted Publishing
+(OIDC). It requires `contents: read` and `id-token: write`; no npm token is
+stored in GitHub. The workflow never overwrites an existing npm version because
+npm rejects duplicate versions.
+
+Release preparation and the manual first-release procedure are documented in
+[docs/release.md](./docs/release.md). The release workflow is manual and does not publish or create a release unless explicitly dispatched with the publish input enabled.
 
 ## Development
 

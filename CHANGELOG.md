@@ -2,10 +2,14 @@
 
 All notable changes are documented here.
 
-## [1.0.0] - Unreleased
+## [2.0.0] - Unreleased
 
 ### Added
 
+- Production-ready Core discovery and normalization with README parsing, filters, aliases, defaults, overrides, quality analysis, diagnostics, and incremental state.
+- CLI commands for initialization, validation, preview, listing, synchronization, and diagnostics.
+- JSON, TypeScript, YAML, and Markdown output formats.
+- Cross-platform CI, npm Trusted Publishing workflow, package validation, and framework examples.
 - Octokit discovery with pagination, filtering, sorting, limits, and bounded concurrency.
 - Remark README extraction with aliases and safe links/images.
 - Zod-validated configuration, defaults, JSON overrides, and deterministic precedence.

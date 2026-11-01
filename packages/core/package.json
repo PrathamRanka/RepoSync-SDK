@@ -1,7 +1,16 @@
 {
   "name": "@reposync/core",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "GitHub-powered portfolio discovery SDK",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PrathamRanka/RepoSync-SDK.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/PrathamRanka/RepoSync-SDK/tree/main/packages/core",
+  "bugs": {
+    "url": "https://github.com/PrathamRanka/RepoSync-SDK/issues"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

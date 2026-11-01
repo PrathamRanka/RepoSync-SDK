@@ -14,7 +14,7 @@ importers:
         specifier: ^10.14.0
         version: 10.14.0
       prettier:
-        specifier: ^3.6.0
+        specifier: 3.9.10
         version: 3.9.10
       turbo:
         specifier: ^2.5.0
@@ -29,7 +29,7 @@ importers:
   packages/cli:
     dependencies:
       "@reposync/core":
-        specifier: workspace:*
+        specifier: workspace:2.0.0
         version: link:../core
     devDependencies:
       "@types/node":
