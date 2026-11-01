@@ -1,1 +1,2 @@
-﻿export const reposyncVersion = "0.1.0";
+﻿//Export RepoSync, defineConfig, public interfaces and error classes.
+export const reposyncVersion = "0.1.0";

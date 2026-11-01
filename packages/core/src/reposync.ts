@@ -1,0 +1,1 @@
+//Main RepoSync class. Connect configuration, GitHub discovery, parsing, overrides and normalization.

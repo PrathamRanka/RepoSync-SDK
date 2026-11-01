@@ -1,0 +1,1 @@
+//All shared TypeScript interfaces and types.

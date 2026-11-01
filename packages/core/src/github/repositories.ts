@@ -1,0 +1,6 @@
+/*Discover repositories by username.
+Handle pagination.
+Filter by topic.
+Exclude forks and archived repositories.
+Fetch individual repository details.
+Fetch language statistics and README */
