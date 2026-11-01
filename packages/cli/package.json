@@ -44,9 +44,9 @@
     "@reposync/core": "workspace:2.0.1"
   },
   "devDependencies": {
-    "@types/node": "^24.19.2",
-    "tsup": "^8.5.0",
-    "typescript": "^5.9.0",
+    "@types/node": "^26.6.6",
+    "tsup": "^9.0.0",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.5"
   }
 }
