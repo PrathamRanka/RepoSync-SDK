@@ -1,0 +1,14 @@
+{
+  "name": "reposync-plain-node-example",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node src/index.mjs"
+  },
+  "dependencies": {
+    "@reposync/core": "^1.0.0"
+  }
+}

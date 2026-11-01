@@ -9,11 +9,11 @@ GitHub API
    |-- Octokit pagination and repository filtering
    |-- Remark README extraction
    |-- Zod configuration and override validation
-   |-- deterministic normalization, quality analysis, and error hierarchy
+   |-- deterministic normalization, quality analysis, sync state, and diagnostics
    |
 @reposync/cli
    |-- config discovery
-   |-- validation, preview, list, doctor
+   |-- validation, preview, list, doctor, incremental sync orchestration
    |-- atomic multi-format generation (JSON, TypeScript, YAML, Markdown)
    |-- optional workflow bootstrap
 ```
@@ -41,6 +41,8 @@ packages/core/src/
   overrides/    JSON override loading and validation
   normalizer.ts stable Project construction
   quality.ts   explainable metadata quality analysis
+  sync-state.ts versioned fingerprints, atomic state, and synchronization locks
+  diagnostics.ts opt-in GitHub connectivity and authentication checks
   errors.ts     public error hierarchy
   reposync.ts   orchestration
 packages/cli/src/
@@ -49,3 +51,10 @@ packages/cli/src/
 ```
 
 The implementation intentionally avoids plugins, databases, UI components, and AI extraction.
+
+Incremental synchronization currently uses versioned local fingerprints to
+classify changes and guarantee atomic, idempotent output/state updates. GitHub
+repository discovery remains a complete paginated read for correctness; ETag
+or conditional README requests are intentionally deferred until the API client
+can prove equivalent results for additions, renames, deletions, and README
+changes.

@@ -74,6 +74,13 @@ const configSchema = z
       })
       .strict()
       .default({ required: ["description", "technologies"] }),
+    sync: z
+      .object({
+        stateFile: z.string().min(1).default(".reposync/state.json"),
+        mode: z.enum(["incremental", "full"]).default("incremental"),
+      })
+      .strict()
+      .default({ stateFile: ".reposync/state.json", mode: "incremental" }),
     filters: filtersSchema.default({
       topicMatch: "any",
       includeForks: false,

@@ -10,6 +10,13 @@ The CLI searches the current directory for `reposync.config.ts`, then `reposync.
 
 `output.format` accepts `json`, `ts`, `yaml`, or `markdown`, with JSON as the default. `quality.required` accepts any combination of `description`, `technologies`, `features`, `demoUrl`, and `image`; it controls the deterministic fields reported by `preview --quality`.
 
+Incremental synchronization stores versioned state at `.reposync/state.json`
+by default. Set `sync.mode` to `full` or pass `reposync sync --full` to ignore
+previous state. State fingerprints are cryptographic hashes of normalized
+projects; state is written atomically only after output succeeds. A corrupt or
+outdated state file fails clearly so it can be removed or bypassed with
+`--full`.
+
 Demo URLs must be HTTP(S). Images may be HTTP(S) or relative paths. Executable schemes such as `javascript:` and `data:` are rejected. Tokens should be supplied through environment variables and are never written to generated projects.
 
 Private discovery is opt-in. Set `includePrivate: true` and provide `token` or

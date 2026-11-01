@@ -30,6 +30,12 @@ export type RepositoryDetails = {
 export type GitHubClient = {
   paginate: (request: unknown, parameters: Record<string, unknown>) => Promise<GitHubRepository[]>;
   rest: {
+    rateLimit?: {
+      get: () => Promise<{ data: { rate: { limit: number; remaining: number; reset: number } } }>;
+    };
+    users?: {
+      getAuthenticated: () => Promise<{ data: { login: string } }>;
+    };
     repos: {
       listForUser: unknown;
       listForAuthenticatedUser?: unknown;
@@ -43,6 +49,10 @@ export type GitHubClient = {
     };
   };
 };
+
+export function createGitHubClient(token?: string): GitHubClient {
+  return new Octokit({ auth: token }) as unknown as GitHubClient;
+}
 
 function mapError(error: unknown, token?: string): Error {
   const response = (
@@ -151,7 +161,7 @@ async function loadRepository(
 
 export async function discoverRepositories(
   config: ResolvedRepoSyncConfig,
-  client: GitHubClient = new Octokit({ auth: config.token }) as unknown as GitHubClient,
+  client: GitHubClient = createGitHubClient(config.token),
 ): Promise<RepositoryDetails[]> {
   try {
     const repositories = config.includePrivate

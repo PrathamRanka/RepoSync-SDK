@@ -138,13 +138,18 @@ pnpm exec reposync doctor --json
 | `preview`  | Discovers and prints normalized projects without writing output.                                                         |
 | `list`     | Prints repository summaries from discovery.                                                                              |
 | `sync`     | Atomically writes JSON, TypeScript, YAML, or Markdown output; unchanged content is not rewritten.                        |
-| `doctor`   | Reports Node version, configuration discovery, and token presence. Network diagnostics remain opt-in at this stage.      |
+| `doctor`   | Reports local health; add `--network` for opt-in API, rate-limit, and token diagnostics.                                 |
 
 Common flags are `--config <path>`, `--format <format>`, `--quality`, `--json`, `--verbose`, `--quiet`, `--workflow`, and `--help`. Exit code `0` means success, `1` means a configuration or runtime failure, and `2` means invalid CLI usage.
 
 ## Generated output
 
 `reposync sync` defaults to `projects.json`. Use `--format json|ts|yaml|markdown` or configure `output.format`. It creates parent directories, writes through a temporary file, renames atomically, and skips rewriting identical content. TypeScript output is importable and typed with `Project`; YAML and Markdown preserve the primary project metadata. Generation runs server-side or at build time; never put `GITHUB_TOKEN` in browser code.
+
+Synchronization maintains versioned cryptographic state in
+`.reposync/state.json` and reports added, updated, unchanged, and removed
+repositories. Use `reposync sync --full` to bypass previous state. State is
+updated only after successful output generation and protected by a lock file.
 
 ## Metadata quality
 
@@ -188,6 +193,7 @@ Read the full guides:
 - [Migration from 0.1.0](./docs/migration.md)
 - [Testing](./docs/testing.md)
 - [Metadata quality](./docs/quality.md)
+- [Examples](./docs/examples.md)
 - [Security](./SECURITY.md)
 - [Contributing](./CONTRIBUTING.md)
 - [Support](./SUPPORT.md)

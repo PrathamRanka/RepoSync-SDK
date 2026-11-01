@@ -1,9 +1,12 @@
 import { runCli } from "./cli.js";
-import { pathToFileURL } from "node:url";
+import { realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 export { parseArgs, runCli } from "./cli.js";
-export { writeProjects } from "./output.js";
+export { formatProjects, isOutputFormat, writeProjects } from "./output.js";
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+const invokedPath = process.argv[1] ? realpathSync(process.argv[1]) : null;
+const modulePath = realpathSync(fileURLToPath(import.meta.url));
+if (invokedPath === modulePath) {
   process.exitCode = await runCli(process.argv.slice(2));
 }

@@ -1,0 +1,24 @@
+[
+  {
+    "name": "example-project",
+    "title": "Example project",
+    "fullName": "octocat/example-project",
+    "description": "Generated project metadata consumed by a plain Node.js application.",
+    "githubDescription": "Example project",
+    "url": "https://github.com/octocat/example-project",
+    "homepage": null,
+    "demoUrl": null,
+    "imageUrls": [],
+    "tags": ["example"],
+    "topics": ["example"],
+    "technologies": ["Node.js"],
+    "features": ["Build-time data consumption"],
+    "introduction": null,
+    "languages": { "JavaScript": 100 },
+    "stars": 0,
+    "forks": 0,
+    "featured": false,
+    "order": null,
+    "updatedAt": "2026-01-01T00:00:00Z"
+  }
+]

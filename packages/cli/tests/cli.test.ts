@@ -16,6 +16,8 @@ describe("@reposync/cli", () => {
       workflow: false,
       quality: false,
       format: undefined,
+      full: false,
+      network: false,
     });
   });
 

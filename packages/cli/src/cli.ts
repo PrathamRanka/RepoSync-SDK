@@ -1,7 +1,17 @@
 import { access, mkdir, writeFile } from "node:fs/promises";
 import { constants } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { analyzeProjectsQuality, loadConfig, RepoSync } from "@reposync/core";
+import {
+  analyzeProjectsQuality,
+  createSyncState,
+  diagnoseGitHub,
+  diffSyncState,
+  loadConfig,
+  readSyncState,
+  RepoSync,
+  withSyncLock,
+  writeSyncState,
+} from "@reposync/core";
 import { isOutputFormat, writeProjects, type OutputFormat } from "./output.js";
 
 type CliOptions = {
@@ -13,6 +23,8 @@ type CliOptions = {
   workflow: boolean;
   format?: OutputFormat;
   quality: boolean;
+  full: boolean;
+  network: boolean;
 };
 
 export function parseArgs(argv: string[]): CliOptions {
@@ -30,6 +42,8 @@ export function parseArgs(argv: string[]): CliOptions {
     workflow: rest.includes("--workflow"),
     format: value("--format") as OutputFormat | undefined,
     quality: rest.includes("--quality"),
+    full: rest.includes("--full"),
+    network: rest.includes("--network"),
   };
 }
 
@@ -61,6 +75,8 @@ Options:
   --config <path>  Configuration file path
   --format <format> Output format: json, ts, yaml, or markdown
   --quality         Include deterministic metadata quality findings in preview
+  --full            Ignore incremental state and perform a full synchronization
+  --network         Run opt-in GitHub connectivity and authentication checks
   --json           Print machine-readable output
   --verbose        Print diagnostic details
   --quiet          Suppress normal output
@@ -152,13 +168,21 @@ jobs:
       const loaded = await loadConfig(cwd, options.config);
       const major = Number.parseInt(process.versions.node.split(".")[0] ?? "0", 10);
       const outputDirectory = dirname(resolve(cwd, loaded.config.output.file));
+      const stateFile = resolve(cwd, loaded.config.sync.stateFile);
       let outputWritable = true;
       try {
         await access(outputDirectory, constants.W_OK);
       } catch {
-        outputWritable = false;
+        try {
+          await access(dirname(outputDirectory), constants.W_OK);
+        } catch {
+          outputWritable = false;
+        }
       }
-      const checks = {
+      const checks: Record<
+        string,
+        { ok: boolean; value: string | boolean | null; warning?: boolean }
+      > = {
         node: { ok: major >= 24, value: process.version },
         configuration: { ok: true, value: loaded.configPath },
         overrides: { ok: true, value: loaded.overridesPath },
@@ -169,18 +193,37 @@ jobs:
         },
         outputDirectory: { ok: outputWritable, value: outputDirectory },
       };
+      try {
+        await readSyncState(stateFile);
+        checks.state = { ok: true, value: stateFile };
+      } catch (error) {
+        checks.state = {
+          ok: false,
+          value: error instanceof Error ? error.message : String(error),
+        };
+      }
+      const networkChecks = options.network
+        ? await diagnoseGitHub(loaded.config)
+        : {
+            connectivity: {
+              status: "skipped" as const,
+              message: "Use --network to check GitHub connectivity.",
+            },
+          };
+      const networkOk = Object.values(networkChecks).every((check) => check.status !== "failed");
       print(
         {
           checks,
-          ok: Object.values(checks).every((check) => check.ok),
+          network: networkChecks,
+          ok: Object.values(checks).every((check) => check.ok) && networkOk,
         },
         options,
       );
-      return Object.values(checks).every((check) => check.ok) ? 0 : 1;
+      return Object.values(checks).every((check) => check.ok) && networkOk ? 0 : 1;
     }
     const loaded = await load({ ...options }, cwd);
-    const projects = await loaded.reposync.discover();
     if (options.command === "preview") {
+      const projects = await loaded.reposync.discover();
       print(
         options.quality
           ? {
@@ -193,6 +236,7 @@ jobs:
       return 0;
     }
     if (options.command === "list") {
+      const projects = await loaded.reposync.discover();
       print(
         projects.map((project) => ({
           name: project.name,
@@ -209,9 +253,34 @@ jobs:
         throw new Error(`Unsupported output format "${options.format}".`);
       }
       const format = options.format ?? loaded.config.output.format;
-      const output = await writeProjects(resolve(cwd, loaded.config.output.file), projects, format);
+      const stateFile = resolve(cwd, loaded.config.sync.stateFile);
+      const result = await withSyncLock(stateFile, async () => {
+        const projects = await loaded.reposync.discover();
+        const previous =
+          options.full || loaded.config.sync.mode === "full"
+            ? null
+            : await readSyncState(stateFile);
+        const output = await writeProjects(
+          resolve(cwd, loaded.config.output.file),
+          projects,
+          format,
+        );
+        const changes = diffSyncState(previous, projects);
+        const stateChanged = await writeSyncState(stateFile, createSyncState(projects));
+        return { output, changes, stateChanged };
+      });
       print(
-        { count: projects.length, changed: output, file: resolve(cwd, loaded.config.output.file) },
+        {
+          count:
+            result.changes.added.length +
+            result.changes.updated.length +
+            result.changes.unchanged.length,
+          changed: result.output,
+          stateChanged: result.stateChanged,
+          file: resolve(cwd, loaded.config.output.file),
+          stateFile,
+          changes: result.changes,
+        },
         options,
       );
       return 0;

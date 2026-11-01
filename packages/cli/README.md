@@ -8,6 +8,8 @@ pnpm exec reposync init
 pnpm exec reposync validate
 pnpm exec reposync preview --json --quality
 pnpm exec reposync sync --format json
+pnpm exec reposync sync --full
+pnpm exec reposync doctor --network --json
 ```
 
 Commands are documented in [../../docs/cli.md](../../docs/cli.md). The CLI discovers `reposync.config.ts` or `reposync.config.json`, reads `reposync.overrides.json`, consumes only Core APIs, and never writes tokens to generated output.

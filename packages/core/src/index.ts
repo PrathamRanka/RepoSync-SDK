@@ -6,7 +6,18 @@ export type { LoadedConfig } from "./config/loader.js";
 export { parseReadme } from "./parser/readme-parser.js";
 export { normalizeProject } from "./normalizer.js";
 export { analyzeProjectQuality, analyzeProjectsQuality } from "./quality.js";
+export {
+  SYNC_STATE_VERSION,
+  createSyncState,
+  diffSyncState,
+  fingerprintProject,
+  readSyncState,
+  withSyncLock,
+  writeSyncState,
+} from "./sync-state.js";
 export { discoverRepositories, repositoryMatches } from "./github/repositories.js";
+export { createGitHubClient } from "./github/repositories.js";
+export { diagnoseGitHub } from "./diagnostics.js";
 export { loadOverrides } from "./overrides/overrides.js";
 export * from "./types/index.js";
 export * from "./errors.js";
